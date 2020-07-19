@@ -7,12 +7,12 @@ import __main__
 # import codecs
 # import logging
 # import pandas as pd
-# import yaml as yml
+import yaml as yml
 from os import path
 # from shutil import copy2
 
 # own function to handle an uploaded file
-from .my_logger import logging_setup
+from my_logger import logging_setup
 
 def general_init():
     global logger, full_path
@@ -35,6 +35,8 @@ def parse_data(file_to_proc):
 
     # conf = load_cfg()
 
+    parse_result = ''
+
     logger.debug("That's all folks")
     print("\nThat's all folks")
 
@@ -43,6 +45,7 @@ def parse_data(file_to_proc):
 
 # main starts here
 if __name__ == "__main__":
-    print("Please call 'parse_data(path_to_file_to_process)' to parse xlsx file getting DF as output")
+    # print("Please call 'parse_data(path_to_file_to_process)' to parse xlsx file getting DF as output")
+    parse_data('')
 
 # TODO:
