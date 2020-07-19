@@ -1,0 +1,56 @@
+# Descr: configuration file for il2 server log parser
+# @author: corvit
+# Created: Sun Jul 19 2020 16:45 MSK
+Atype:
+  MissionStart: 0
+  Hit: 1
+  Damage: 2
+  Kill: 3
+  PlayerMissionEnd: 4
+  TakeOff: 5
+  Landing: 6
+  MissionEnd: 7
+  MissionObjective: 8
+  AirfieldInfo: 9
+  PlayerPlane: 10
+  GroupInit: 11
+  ObjectSpawned: 12
+  InfluenceAreaHeader: 13
+  InfluenceAreaBoundary: 14
+  LogVersion: 15
+  BotUninit: 16
+  PosChanged: 17 # unused
+  BotEjectLeave: 18
+  RoundEnd: 19
+  Join: 20
+  Leave: 21
+  None: 22
+  All: 23
+
+Atype_new:
+  LET_MISSION_START: 0
+  LET_HIT: 1
+  LET_DAMAGE: 2
+  LET_KILL: 3
+  LET_PLAYER_AMMO: 4
+
+  LET_TAKEOFF: 5
+  LET_LANDING: 6
+  LET_MISSION_END: 7
+  LET_MISSION_OBJECT: 8
+  LET_AIRFIELD: 9
+
+  LET_CREATEPLANE: 10
+  LET_GROUPINIT: 11
+  LET_GAMEOBJECTINVOLVED: 12
+  LET_INFLUENCEAREA_HEADER: 13
+  LET_INFLUENCEAREA_BOUNDARY: 14
+
+  LET_LOG_VERSION: 15
+  LET_DISCONNECT: 16
+  LET_POSITION: 17
+  LET_BOT_EJECTLEAVE: 18
+  LET_ROUND_END: 19
+  LET_USER_CONNECTED: 20
+  LET_USER_DISCONNECTED: 21
+  LET_TANKTRAVEL: 22

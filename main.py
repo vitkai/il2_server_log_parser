@@ -3,8 +3,8 @@ Descr: main module to operate log parsing
 @author: corvit
 Created: Sun Jul 19 2020 14:05 MSK
 """
-import __main__
-# import codecs
+# import __main__
+import codecs
 # import logging
 # import pandas as pd
 import yaml as yml
@@ -23,6 +23,25 @@ def general_init():
     logger.debug("Full path: {0} | filename: {1}".format(full_path, filename))
 
 
+def load_cfg():
+    # read configuration
+    cfg_file = full_path + '\\' + "parser.yaml"
+    msg = 'Loading configuration:\nOpening {}'.format(cfg_file)
+    logger.debug(msg)
+    print(msg)
+
+    with codecs.open(cfg_file, mode='rb', encoding='utf-8') as yml_fl:
+        cfg = yml.safe_load(yml_fl)
+
+    msg = 'Config loaded successfully'
+    logger.debug(msg)
+    print(msg)
+
+    logger.debug(cfg)
+
+    return cfg
+
+
 def parse_data(file_to_proc):
     """
     parsing of log file
@@ -33,7 +52,9 @@ def parse_data(file_to_proc):
 
     general_init()
 
-    # conf = load_cfg()
+    conf = load_cfg()
+
+    msg = f'Loaded the following configuration:\n{conf}'
 
     parse_result = ''
 
