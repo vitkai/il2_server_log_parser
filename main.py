@@ -51,12 +51,36 @@ def parse_data(file_to_proc):
     """
 
     general_init()
-
     conf = load_cfg()
 
     msg = f'Loaded the following configuration:\n{conf}'
+    logger.debug(msg)
 
     parse_result = ''
+    # lines = []
+
+    files = ('\media\log_samples\missionReport(2020-07-16_20-55-42)[0].txt',)
+
+    for file_path in files:
+        work_fl = full_path + '\\' + file_path
+        logger.debug(f'processing file: [{work_fl}]')
+        with open(work_fl, mode='r') as f:
+            for line in f:
+                # игнорируем "плохие" строки без
+                if 'AType' not in line:
+                    logger.warning('ignored bad string: [{}]'.format(line))
+                    continue
+                # lines.append(line)
+
+                try:
+                    # data = parse_mission_log_line.parse(line)
+                    logger.debug(f'processing line: [{line}]')
+                except AttributeError:
+                    logger.error('bad line: [{}]'.format(line.strip()))
+                    continue
+                except parse_mission_log_line.UnexpectedATypeWarning:
+                    logger.warning('unexpected atype: [{}]'.format(line))
+                    continue
 
     logger.debug("That's all folks")
     print("\nThat's all folks")
