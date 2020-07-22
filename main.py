@@ -244,7 +244,7 @@ def parse_data(file_to_proc):
                     logger.warning('unexpected atype: [{}]'.format(line))
                     continue
 
-    logger.debug(f'atype_handlers: {atype_handlers}')
+    # logger.debug(f'atype_handlers: {atype_handlers}')
 
     logger.debug("That's all folks")
     print("\nThat's all folks")
