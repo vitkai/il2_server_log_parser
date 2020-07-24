@@ -3,3 +3,4 @@ media/
 .idea/
 .vs
 *.log
+db.sqlite3

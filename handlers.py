@@ -1,7 +1,7 @@
 """
 Descr: main module to operate log parsing
 @author: vaal, corvit
-Created: Sun Jul 24 2020 13:45 MSK
+Created: Fri Jul 24 2020 13:45 MSK
 """
 from datetime import datetime
 import functools
