@@ -11,16 +11,67 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
-# Your application specific imports
+# My application specific imports
+import codecs
+import yaml as yml
+
+from os import path
+
 from data.models import *
+from my_logger import logging_setup
 
 
-#Add user
-user = User(name="corvit", email="corvit@mail.ru")
-user.save()
+def general_init():
+    global logger, full_path
+    logger = logging_setup()
 
-# Application logic
-first_user = User.objects.all()[0]
+    # get script path
+    full_path, filename = path.split(path.realpath(__file__))
+    logger.debug("Full path: {0} | filename: {1}".format(full_path, filename))
 
-print(first_user.name)
-print(first_user.email)
+
+def load_cfg():
+    # read configuration
+    cfg_file = full_path + '\\' + "parser.yaml"
+    msg = 'Loading configuration:\nOpening {}'.format(cfg_file)
+    logger.debug(msg)
+    print(msg)
+
+    with codecs.open(cfg_file, mode='rb', encoding='utf-8') as yml_fl:
+        cfg = yml.safe_load(yml_fl)
+
+    msg = 'Config loaded successfully'
+    logger.debug(msg)
+    print(msg)
+
+    logger.debug(cfg)
+
+    return cfg
+
+
+def tst_user():
+    # Add user
+    #user = User(name="corvit", email="corvit@mail.ru")
+    #user.save()
+
+    # Application logic
+    first_user = User.objects.all()[0]
+
+    print(first_user.name)
+    print(first_user.email)
+
+
+# main starts here
+if __name__ == "__main__":
+    print('Running main module')
+
+    general_init()
+    conf = load_cfg()
+    msg = f'Loaded the following configuration:\n{conf}'
+    logger.debug(msg)
+
+    tst_user()
+
+    print("\nThat's all folks")
+
+# TODO:
