@@ -8,16 +8,21 @@ import logging
 
 from os import path
 
+logger = logging.getLogger()
+
 def logging_setup():
-    logger = logging.getLogger(__name__)
+    global logger
     filename = path.splitext(__main__.__file__)[0] + '.log'
     handler = logging.FileHandler(filename, encoding = "UTF-8")
 
     logger.setLevel(logging.DEBUG)
+    # root_logger.setLevel(logging.DEBUG)
     handler.setLevel(logging.DEBUG)
 
     formatter = logging.Formatter('%(asctime)s %(module)s.%(funcName)s %(levelname)s - %(message)s')
     handler.setFormatter(formatter)
+
+    # logger = logging.getLogger(__name__)
 
     if logger.hasHandlers():
         logger.handlers.clear()

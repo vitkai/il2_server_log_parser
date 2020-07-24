@@ -3,22 +3,21 @@ Descr: main module to operate log parsing
 @author: corvit
 Created: Fri Jul 24 2020 11:05 MSK
 """
-# Django specific settings
 import os
+# Django specific settings
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 
-# Ensure settings are read
+import codecs
+import logging
+import yaml as yml
 from django.core.wsgi import get_wsgi_application
+# Ensure settings are read
 application = get_wsgi_application()
 
 # My application specific imports
-import codecs
-import yaml as yml
-
-from os import path
-
 from data.models import *
 from my_logger import logging_setup
+from parse import parse_data
 
 
 def general_init():
@@ -26,7 +25,7 @@ def general_init():
     logger = logging_setup()
 
     # get script path
-    full_path, filename = path.split(path.realpath(__file__))
+    full_path, filename = os.path.split(os.path.realpath(__file__))
     logger.debug("Full path: {0} | filename: {1}".format(full_path, filename))
 
 
@@ -44,7 +43,7 @@ def load_cfg():
     logger.debug(msg)
     print(msg)
 
-    logger.debug(cfg)
+    # logger.debug(cfg)
 
     return cfg
 
@@ -62,7 +61,7 @@ def tst_user():
 
 
 # main starts here
-if __name__ == "__main__":
+def main():
     print('Running main module')
 
     general_init()
@@ -72,6 +71,13 @@ if __name__ == "__main__":
 
     tst_user()
 
+    files = (full_path + '\media\log_samples\missionReport(2020-07-16_20-55-42)[0].txt',)
+    parse_data(files)
+
     print("\nThat's all folks")
+
+
+if __name__ == "__main__":
+    main()
 
 # TODO:
