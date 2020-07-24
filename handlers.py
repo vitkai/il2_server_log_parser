@@ -3,6 +3,7 @@ Descr: main module to operate log parsing
 @author: vaal, corvit
 Created: Sun Jul 24 2020 13:45 MSK
 """
+from datetime import datetime
 import functools
 import re
 
@@ -241,6 +242,8 @@ atype_handlers = [
     atype_12, atype_13, atype_14, atype_15, atype_16, atype_17, atype_18, atype_19, atype_20, atype_21, atype_22,
 ]
 
+
+re_pos = re.compile(r'[.\-\d]+,\s*[.\-\d]+,\s*[.\-\d]+')
 
 def pos_handler(pos):
     """

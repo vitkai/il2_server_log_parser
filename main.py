@@ -54,15 +54,15 @@ def parse_line(line):
     :rtype: dict | None
     """
     line = unicodedata.normalize('NFKD', line)
-    logger.debug(f'normalized line {line}')
+    #logger.debug(f'normalized line {line}')
 
     atype_id = int(line.partition('AType:')[2][:2])
-    logger.debug(f'atype_id: {atype_id}')
+    #logger.debug(f'atype_id: {atype_id}')
 
     if 0 <= atype_id <= 22:
         data = atype_handlers[atype_id].match(line.strip()).groupdict()
         data['atype_id'] = atype_id
-        logger.debug(f'data: {data}')
+        #logger.debug(f'data: {data}')
         for key, value in list(data.items()):
             if key in param_handlers:
                 data[key] = param_handlers[key](value)
@@ -103,7 +103,7 @@ def parse_data(file_to_proc):
                 # lines.append(line)
 
                 try:
-                    logger.debug(f'processing line: [{line}]')
+                    logger.debug(f'processing line:\n{line.strip()}')
                     parse_result = parse_line(line)
                 except AttributeError:
                     logger.error('bad line: [{}]'.format(line.strip()))
