@@ -82,7 +82,7 @@ def parse_data(files_to_proc):
 
 # main starts here
 if __name__ == "__main__":
-    # print("Please call 'parse_data(path_to_file_to_process)' to parse xlsx file getting DF as output")
-    parse_data('')
+    print("Please call 'parse_data(path_to_file_to_process)' to parse log files")
+    #parse_data('')
 
 # TODO:

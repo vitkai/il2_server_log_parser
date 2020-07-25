@@ -6,13 +6,12 @@ Created: Fri Jul 24 2020 11:05 MSK
 import os
 # Django specific settings
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
+# Ensure settings are read
+from django.core.wsgi import get_wsgi_application
+application = get_wsgi_application()
 
 import codecs
-import logging
 import yaml as yml
-from django.core.wsgi import get_wsgi_application
-# Ensure settings are read
-application = get_wsgi_application()
 
 # My application specific imports
 from data.models import *
