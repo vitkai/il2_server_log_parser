@@ -5,6 +5,9 @@ Created: Fri Jul 24 2020 11:05 MSK
 """
 import glob
 import os
+from pathlib import Path
+import re
+
 # Django specific settings
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 # Ensure settings are read
@@ -61,12 +64,27 @@ def tst_user():
 
 
 def get_files_lst(log_path, log_ptrn):
-    folder_ptrn = full_path + log_path + log_ptrn
-    lst = glob.escape(folder_ptrn)
+    MISSION_NAME_LOG_ID = re.compile(r'^.*\[(?P<index>\d+)\].*$')
+    # MISSION_LOG_FILE_RE = re.compile(r'^.*port\(\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d\)')
+    MISSION_NAME = re.compile(r'^.*port\((?P<mission_name>\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d)\)')
+
+
+    folder_ptrn = Path(full_path + log_path) # + log_ptrn
+    # folder_ptrn = full_path + log_path + 'missionReport*[[]0[]].txt'
+
+    # lst = glob.escape(folder_ptrn)
+    lst = folder_ptrn.glob(log_ptrn)
     # for m_report_file in MISSION_REPORT_PATH.glob('missionReport*[[]0[]].txt'):
 
-    logger.debug(f'filter pattern:\n{folder_ptrn}')
-    logger.debug(f'filtered log files:\n{lst}')
+    #logger.debug(f'filter pattern:\n{folder_ptrn}')
+    #logger.debug(f'filtered log files:\n{lst}')
+    #print(f'filtered log files:')
+    for file in lst:
+        logger.debug(f'file: {file}')
+        #print(f'{file}')
+        mission_name = MISSION_NAME.match(str(file)).groupdict()['mission_name']
+        mission_name_log_id = MISSION_NAME_LOG_ID.match(str(file)).groupdict()['index']
+        logger.debug(f'mission_name: {mission_name} | log_id: {mission_name_log_id}')
 
     lst = (full_path + '\log_samples\missionReport(2020-07-16_20-55-42)[0].txt',)
 

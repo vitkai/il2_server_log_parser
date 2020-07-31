@@ -4,7 +4,7 @@
 settings:
   log_path: '\log_samples\'
   # log_ptrn: 'missionReport(*)[*].txt'
-  log_ptrn: 'missionReport*[[]0[]].txt'
+  log_ptrn: 'missionReport*[[]*[]].txt'
 
 Atype:
   MissionStart: 0
