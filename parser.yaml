@@ -2,7 +2,8 @@
 # @author: corvit
 # Created: Sun Jul 19 2020 16:45 MSK
 settings:
-  log_path: '\log_samples\'
+  # log_path: '\log_samples\' - starting '\' means absolute path
+  log_path: 'log_samples\'
   # log_ptrn: 'missionReport(*)[*].txt'
   log_ptrn: 'missionReport*[[]*[]].txt'
 

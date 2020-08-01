@@ -34,7 +34,12 @@ def general_init():
 
 def load_cfg():
     # read configuration
-    cfg_file = full_path + '\\' + "parser.yaml"
+
+    """global log_dir_path
+
+    print(f'load_cfg().full_path={full_path}')"""
+
+    cfg_file = os.path.join(full_path,"parser.yaml")
     msg = 'Loading configuration:\nOpening {}'.format(cfg_file)
     logger.debug(msg)
     print(msg)
@@ -45,6 +50,8 @@ def load_cfg():
     msg = 'Config loaded successfully'
     logger.debug(msg)
     print(msg)
+
+    #log_dir_path = os.path.join(full_path, cfg['settings']['log_path'])
 
     # logger.debug(cfg)
 
@@ -64,12 +71,19 @@ def tst_user():
 
 
 def get_files_lst(log_path, log_ptrn):
+    """
+    :param log_path: path to log files dir
+    :param log_ptrn: pattern for log files
+    (data is populated to db)
+    :return: lst: sorted list of Mission_Log objects
+    """
     MISSION_NAME_LOG_ID = re.compile(r'^.*\[(?P<index>\d+)\].*$')
     # MISSION_LOG_FILE_RE = re.compile(r'^.*port\(\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d\)')
     MISSION_NAME = re.compile(r'^.*port\((?P<mission_name>\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d)\)')
 
-
-    folder_ptrn = Path(full_path + log_path) # + log_ptrn
+    #folder_ptrn = os.path.join(full_path, log_path)  # + log_ptrn
+    folder_ptrn = Path(log_path)  # + log_ptrn
+    #folder_ptrn = Path(full_path + log_path) # + log_ptrn
     # folder_ptrn = full_path + log_path + 'missionReport*[[]0[]].txt'
 
     # lst = glob.escape(folder_ptrn)
@@ -97,13 +111,27 @@ def get_files_lst(log_path, log_ptrn):
             logger.debug('The record exists in db')
             pass
 
-    lst = (full_path + '\log_samples\missionReport(2020-07-16_20-55-42)[0].txt',)
+    #lst = (full_path + '\log_samples\missionReport(2020-07-16_20-55-42)[0].txt',)
 
+    # get sorted file list
+    lst = Mission_Log.objects.filter(is_processed=False).order_by('name', 'miss_log_id')
+
+    """
+    for item in lst:
+        #print(f'idx:{idx} | item: {item}')
+        print(f'items: {item.name}, {item.miss_log_id}')
+        #print(f'idx:{idx} | item: {lst[idx]}')
+    print(lst)
+    """
     return lst
 
 
 # main starts here
 def main():
+    #global full_path#, log_dir_path
+
+    #full_path, filename = os.path.split(os.path.realpath(__file__))
+
     print('Running main module')
 
     general_init()
@@ -111,14 +139,21 @@ def main():
     msg = f'Loaded the following configuration:\n{conf}'
     logger.debug(msg)
 
-    tst_user()
+    log_dir_path = os.path.join(full_path, conf['settings']['log_path'])
+    #log_path = os.path.join(full_path, conf['settings']['log_path'])
+
+    #print(f'log_dir_path: {log_dir_path}')
+
+    #tst_user()
 
     #files = (full_path + '\media\log_samples\missionReport(2020-07-16_20-55-42)[0].txt',)
-    files = get_files_lst(conf['settings']['log_path'], conf['settings']['log_ptrn'])
-    msg = f'files to process list:\n{files}'
-    logger.debug(msg)
+    #files = get_files_lst(conf['settings']['log_path'], conf['settings']['log_ptrn'])
+    files = get_files_lst(log_dir_path, conf['settings']['log_ptrn'])
 
-    parse_data(files)
+    """msg = f'files to process list:\n{files}'
+    logger.debug(msg)"""
+
+    parse_data(files, log_dir_path)
 
     print("\nThat's all folks")
 

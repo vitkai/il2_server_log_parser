@@ -6,11 +6,19 @@ Created: Sun Jul 19 2020 14:05 MSK
 # import __main__
 import unicodedata
 import logging
+import os
 # import pandas as pd
 # from shutil import copy2
 
+# Django specific settings
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
+# Ensure settings are read
+from django.core.wsgi import get_wsgi_application
+application = get_wsgi_application()
+
 # own function to handle an uploaded file
 from handlers import atype_handlers, param_handlers
+from data.models import Mission_Log
 
 class UnexpectedATypeWarning(Warning):
     pass
@@ -35,24 +43,31 @@ def parse_line(line):
         for key, value in list(data.items()):
             if key in param_handlers:
                 data[key] = param_handlers[key](value)
-        logger.debug(f'data: {data}')
+        #logger.debug(f'data: {data}')
         return data
     else:
         raise UnexpectedATypeWarning
 
 
-def parse_data(files_to_proc):
+def parse_data(files_to_proc, log_path):
     """
     parsing of log file
-    receives parameters:
-    file_to_proc - name of the file to be processed
-    returns something
+    :param files_to_proc: Mission_Log[]: list of Mission_Log object corresponding to the log files to be processed
+    :param log_path: path to log files dir
+    :return: something
     """
+    rec: Mission_Log
     parse_result = ''
     # lines = []
 
-    for work_fl in files_to_proc:
-        #work_fl = full_path + '\\' + file_path
+    #for work_fl in files_to_proc:
+    for rec in files_to_proc:
+        file_path = 'missionReport(' + str(rec.name) + ')[' + str(rec.miss_log_id) + '].txt'
+        #print(file_path)
+
+        #folder_ptrn = Path(full_path + log_path + file_path)
+        work_fl = os.path.join(log_path, file_path)
+        # work_fl = full_path + '\\' + file_path
         logger.debug(f'processing file: [{work_fl}]')
         with open(work_fl, mode='r') as f:
             for line in f:
@@ -63,7 +78,7 @@ def parse_data(files_to_proc):
                 # lines.append(line)
 
                 try:
-                    logger.debug(f'processing line:\n{line.strip()}')
+                    #logger.debug(f'processing line:\n{line.strip()}')
                     parse_result = parse_line(line)
                 except AttributeError:
                     logger.error('bad line: [{}]'.format(line.strip()))
