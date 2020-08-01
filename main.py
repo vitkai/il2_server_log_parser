@@ -3,19 +3,19 @@ Descr: main module to operate log parsing
 @author: corvit
 Created: Fri Jul 24 2020 11:05 MSK
 """
-import glob
+#import glob
+import codecs
 import os
 from pathlib import Path
 import re
+import yaml as yml
+
 
 # Django specific settings
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 # Ensure settings are read
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
-
-import codecs
-import yaml as yml
 
 # My application specific imports
 from data.models import *
@@ -85,6 +85,17 @@ def get_files_lst(log_path, log_ptrn):
         mission_name = MISSION_NAME.match(str(file)).groupdict()['mission_name']
         mission_name_log_id = MISSION_NAME_LOG_ID.match(str(file)).groupdict()['index']
         logger.debug(f'mission_name: {mission_name} | log_id: {mission_name_log_id}')
+
+        #ftlr_exists = Mission_Log.objects.filter(name=mission_name, miss_log_id=mission_name_log_id).exists()
+
+        if not Mission_Log.objects.filter(name=mission_name, miss_log_id=mission_name_log_id).exists():
+            # Add mission log record to the base
+            miss_log = Mission_Log(name=mission_name, miss_log_id=mission_name_log_id)
+            miss_log.save()
+            logger.debug('Adding record to db')
+        else:
+            logger.debug('The record exists in db')
+            pass
 
     lst = (full_path + '\log_samples\missionReport(2020-07-16_20-55-42)[0].txt',)
 

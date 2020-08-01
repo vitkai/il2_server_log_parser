@@ -14,6 +14,13 @@ class User(models.Model):
     email = models.EmailField(max_length=255)
 
 
+# Mission log classes
+class Mission_Log(models.Model):
+    name = models.CharField(max_length=25)
+    miss_log_id = models.IntegerField(default=0, db_index=True)
+    is_processed = models.BooleanField(default=False, editable=False)
+
+
 class Score(models.Model):
     SCORE_TYPE = (
         ('int', 'integer'),
