@@ -8,6 +8,7 @@ import unicodedata
 import logging
 import os
 import pytz
+import sys
 import time
 from django.conf import settings
 from datetime import datetime#, timedelta
@@ -22,7 +23,7 @@ from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
 # own function to handle an uploaded file
-from handlers import atype_handlers, param_handlers
+from handlers import atype_handlers, param_handlers, event_handlers
 from data.models import Mission, Mission_Log
 
 class UnexpectedATypeWarning(Warning):
@@ -103,12 +104,21 @@ def parse_data(files_to_proc, log_path):
                 try:
                     #logger.debug(f'processing line:\n{line.strip()}')
                     parse_result = parse_line(line)
-                except AttributeError:
+                    #atype_id = parse_result.pop('atype_id')
+                    atype_id = parse_result['atype_id']
+                    logger.debug(f"atype_id = {atype_id}")
+                    logger.debug(f"event_handlers[atype_id] = {event_handlers[atype_id]}")
+                    event_handlers[atype_id](**parse_result)
+
+                    """except AttributeError:
                     logger.error('bad line: [{}]'.format(line.strip()))
                     continue
-                except parse.UnexpectedATypeWarning:
+                    except UnexpectedATypeWarning:
                     logger.warning('unexpected atype: [{}]'.format(line))
-                    continue
+                    continue"""
+                except Exception as err:
+                    print("Unexpected error:", err)
+                    raise
 
     # logger.debug(f'atype_handlers: {atype_handlers}')
 

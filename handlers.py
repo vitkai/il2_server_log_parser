@@ -299,3 +299,101 @@ param_handlers = {
     'weapon_mods_id': lambda s: [i for i, wm in enumerate(bin(int(s))[2:-1][::-1], start=1) if wm == '1'],
 }
 
+
+def event_mission_start():
+    pass
+
+
+def event_hit():
+    pass
+
+
+def event_damage():
+    pass
+
+
+def event_kill():
+    pass
+
+
+def event_sortie_end():
+    pass
+
+
+def event_takeoff():
+    pass
+
+
+def  event_landing():
+    pass
+
+
+def event_mission_end():
+    pass
+
+
+def event_mission_result():
+    pass
+
+
+def event_airfield():
+    pass
+
+
+def event_player():
+    pass
+
+
+def event_group():
+    pass
+
+
+def event_game_object():
+    pass
+
+
+def event_influence_area():
+    pass
+
+
+def event_influence_area_boundary():
+    pass
+
+
+def event_log_version(tik, version, atype_id):
+    pass
+
+
+def event_bot_deinitialization():
+    pass
+
+
+def event_pos_changed():
+    pass
+
+
+def event_bot_eject_leave():
+    pass
+
+
+def event_round_end():
+    pass
+
+
+def event_player_connected():
+    pass
+
+
+def event_player_disconnected():
+    pass
+
+
+def event_tank_travel():
+    pass
+
+
+event_handlers = (event_mission_start, event_hit, event_damage, event_kill, event_sortie_end, event_takeoff,
+                  event_landing, event_mission_end, event_mission_result, event_airfield, event_player, event_group,
+                  event_game_object, event_influence_area, event_influence_area_boundary, event_log_version,
+                  event_bot_deinitialization, event_pos_changed, event_bot_eject_leave, event_round_end,
+                  event_player_connected, event_player_disconnected, event_tank_travel)
