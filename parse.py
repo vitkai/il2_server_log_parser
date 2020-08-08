@@ -43,7 +43,7 @@ def parse_line(line):
         for key, value in list(data.items()):
             if key in param_handlers:
                 data[key] = param_handlers[key](value)
-        #logger.debug(f'data: {data}')
+        logger.debug(f'data: {data}')
         return data
     else:
         raise UnexpectedATypeWarning
