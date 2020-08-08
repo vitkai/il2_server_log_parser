@@ -23,6 +23,7 @@ class Mission_Log(models.Model):
 
 # Mission class
 class Mission(models.Model):
+    timestamp = models.IntegerField(unique=True)
     name = models.CharField(max_length=256, blank=True, db_index=True)
 
     date_start = models.DateTimeField(db_index=True)
@@ -435,6 +436,6 @@ class Mission_Events(models.Model):
 
     timestamp = models.IntegerField(unique=True)
     # tik = models.IntegerField(db_index=True)
-    data = models.JSONField(default=dict)
+    # data = models.JSONField(default=dict)
 
 

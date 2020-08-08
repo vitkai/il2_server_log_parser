@@ -29,4 +29,5 @@ INSTALLED_APPS = (
 SECRET_KEY = 'REPLACE_ME'
 
 # my settings
+USE_TZ = True
 MISSION_REPORT_TZ = 'UTC'

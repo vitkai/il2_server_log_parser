@@ -67,7 +67,8 @@ def check_mission(mis_name):
         real_date = real_date.astimezone(pytz.UTC)
 
         # Add mission
-        mission = Mission(name=mis_name, timestamp=mission_timestamp, date_start=real_date)
+        mission = Mission(name=mis_name, timestamp=mission_timestamp, date_start=real_date, date_end=real_date,
+                          duration=0)
         mission.save()
 
 
@@ -84,7 +85,7 @@ def parse_data(files_to_proc, log_path):
 
     #for work_fl in files_to_proc:
     for rec in files_to_proc:
-        check_mission(rec)
+        check_mission(rec.name)
         file_path = 'missionReport(' + str(rec.name) + ')[' + str(rec.miss_log_id) + '].txt'
         #print(file_path)
 
