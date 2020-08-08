@@ -7,6 +7,11 @@ Created: Sun Jul 19 2020 14:05 MSK
 import unicodedata
 import logging
 import os
+import pytz
+import time
+from django.conf import settings
+from datetime import datetime#, timedelta
+
 # import pandas as pd
 # from shutil import copy2
 
@@ -18,12 +23,13 @@ application = get_wsgi_application()
 
 # own function to handle an uploaded file
 from handlers import atype_handlers, param_handlers
-from data.models import Mission_Log
+from data.models import Mission, Mission_Log
 
 class UnexpectedATypeWarning(Warning):
     pass
 
 logger = logging.getLogger(__name__)
+
 
 def parse_line(line):
     """
@@ -49,6 +55,22 @@ def parse_line(line):
         raise UnexpectedATypeWarning
 
 
+def check_mission(mis_name):
+    time_zone = pytz.timezone(settings.MISSION_REPORT_TZ)
+    mission_timestamp = int(time.mktime(time.strptime(mis_name, '%Y-%m-%d_%H-%M-%S')))
+
+    if Mission.objects.filter(timestamp=mission_timestamp).exists():
+        logger.info(f'{mission_timestamp} - exists in the DB')
+        # return
+    else:
+        real_date = time_zone.localize(datetime.fromtimestamp(mission_timestamp))
+        real_date = real_date.astimezone(pytz.UTC)
+
+        # Add mission
+        mission = Mission(name=mis_name, timestamp=mission_timestamp, date_start=real_date)
+        mission.save()
+
+
 def parse_data(files_to_proc, log_path):
     """
     parsing of log file
@@ -62,16 +84,16 @@ def parse_data(files_to_proc, log_path):
 
     #for work_fl in files_to_proc:
     for rec in files_to_proc:
+        check_mission(rec)
         file_path = 'missionReport(' + str(rec.name) + ')[' + str(rec.miss_log_id) + '].txt'
         #print(file_path)
 
-        #folder_ptrn = Path(full_path + log_path + file_path)
         work_fl = os.path.join(log_path, file_path)
         # work_fl = full_path + '\\' + file_path
         logger.debug(f'processing file: [{work_fl}]')
         with open(work_fl, mode='r') as f:
             for line in f:
-                # игнорируем "плохие" строки без
+                # ignore "bad" strings
                 if 'AType' not in line:
                     logger.warning('ignored bad string: [{}]'.format(line))
                     continue

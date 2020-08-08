@@ -433,7 +433,7 @@ class Mission_Events(models.Model):
     mission = models.ForeignKey(Mission, on_delete=models.CASCADE)
     sorties = models.ManyToManyField(Sortie)
 
-    timestamp = models.DateTimeField(db_index=True)
+    timestamp = models.IntegerField(unique=True)
     # tik = models.IntegerField(db_index=True)
     data = models.JSONField(default=dict)
 
