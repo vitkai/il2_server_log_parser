@@ -172,7 +172,16 @@ class Profile(models.Model):
 
 
 class Player(models.Model):
+    """
+    'profile_id': '9bf9b219-95eb-4ea6-9d61-cfb0a3cc011f',
+    'account_id': '3ba2a5c1-6ac6-4f96-8bfb-963efe9906dd',
+    'name': '-DED-Zlodey',
+    """
+    profile_id = models.CharField(max_length=40, null=True, db_index=True)
+    account_id = models.CharField(max_length=40, null=True, db_index=True)
+    name = models.CharField(max_length=128, null=True, db_index=True)
     # tour = models.ForeignKey(Tour, related_name='+', on_delete=models.CASCADE)
+    """
     PLAYER_TYPES = (
         ('pilot', 'pilot'),
         ('gunner', 'gunner'),
@@ -180,7 +189,8 @@ class Player(models.Model):
     )
 
     type = models.CharField(choices=PLAYER_TYPES, max_length=8, default='pilot', db_index=True)
-    profile = models.ForeignKey(Profile, related_name='players', on_delete=models.CASCADE)
+    """
+    # profile = models.ForeignKey(Profile, related_name='players', on_delete=models.CASCADE)
     # squad = models.ForeignKey('stats.Squad', related_name='players', blank=True, null=True, on_delete=models.SET_NULL)
 
     date_first_sortie = models.DateTimeField(null=True)
@@ -204,6 +214,7 @@ class Player(models.Model):
     coal_pref = models.IntegerField(default=Coalition.neutral, choices=COALITIONS)
     """
 
+    """
     # налет в секундах?
     flight_time = models.BigIntegerField(default=0, db_index=True)
 
@@ -387,6 +398,7 @@ class Player(models.Model):
                 self.coal_pref = 2
             else:
                 self.coal_pref = 0
+    """
 
 
 class Sortie(models.Model):
@@ -422,5 +434,7 @@ class Mission_Events(models.Model):
     sorties = models.ManyToManyField(Sortie)
 
     timestamp = models.DateTimeField(db_index=True)
+    # tik = models.IntegerField(db_index=True)
+    data = models.JSONField(default=dict)
 
 
