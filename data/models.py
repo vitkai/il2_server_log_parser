@@ -450,4 +450,5 @@ class Mission_Object(models.Model):
     tik = models.IntegerField()
     date_spawn = models.DateTimeField(blank=True, null=True)
     game_date_spawn = models.DateTimeField(blank=True, null=True)
+    parent_id = models.IntegerField(blank=True, null=True) # self.object_id
 

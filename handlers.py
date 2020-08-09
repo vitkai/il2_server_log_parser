@@ -382,9 +382,10 @@ def event_game_object(**kwargs):
         game_date_spawn = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
 
         # Add mission
-        object = Mission_Object(mission=mission, object_id=kwargs['object_id'], object_name = kwargs['object_name'],
-                                name = kwargs['name'], country_id = kwargs['country_id'], tik = kwargs['tik'],
-                                date_spawn = date_spawn, game_date_spawn = game_date_spawn)
+        object = Mission_Object(mission=mission, object_id=kwargs['object_id'], parent_id=kwargs['parent_id'],
+                                object_name = kwargs['object_name'], name = kwargs['name'],
+                                country_id = kwargs['country_id'], tik = kwargs['tik'], date_spawn = date_spawn,
+                                game_date_spawn = game_date_spawn)
         object.save()
     pass
 
