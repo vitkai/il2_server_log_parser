@@ -361,7 +361,9 @@ def event_player():
     pass
 
 
-def event_group():
+def event_group(**kwargs):
+    # group initialization event
+    logger.debug('Event handler for [group initialization] is empty')
     pass
 
 
@@ -378,6 +380,7 @@ def event_influence_area_boundary():
 
 
 def event_log_version(tik, version, atype_id):
+    logger.debug('Event handler for [log version] is empty')
     pass
 
 
