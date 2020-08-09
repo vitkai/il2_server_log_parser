@@ -182,6 +182,7 @@ class Player(models.Model):
     profile_id = models.CharField(max_length=40, null=True, db_index=True)
     account_id = models.CharField(max_length=40, null=True, db_index=True)
     name = models.CharField(max_length=128, null=True, db_index=True)
+
     # tour = models.ForeignKey(Tour, related_name='+', on_delete=models.CASCADE)
     """
     PLAYER_TYPES = (
@@ -442,8 +443,8 @@ class Mission_Event(models.Model):
 
 class Mission_Object(models.Model):
     mission = models.ForeignKey(Mission, on_delete=models.CASCADE)
-    #object_id = models.IntegerField(unique=True)
-    object_id = models.IntegerField()
+    object_id = models.IntegerField(unique=True)
+    #object_id = models.IntegerField()
     object_name = models.CharField(max_length=128)
     name = models.CharField(max_length=128)
     country_id = models.IntegerField()
@@ -461,4 +462,30 @@ class Airfield(models.Model):
     pos_x = models.FloatField(blank=True, null=True)
     pos_y = models.FloatField(blank=True, null=True)
     pos_z = models.FloatField(blank=True, null=True)
+
+
+class Player_Craft(models.Model):
+    mission_object = models.ForeignKey(Mission_Object, on_delete=models.CASCADE)
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    # mission_object = models.IntegerField(blank=True, null=True)
+    # player = models.IntegerField(blank=True, null=True)
+    airfield = models.IntegerField(blank=True, null=True)
+
+    pos_x = models.FloatField(blank=True, null=True)
+    pos_y = models.FloatField(blank=True, null=True)
+    pos_z = models.FloatField(blank=True, null=True)
+
+    bot_id = models.IntegerField(blank=True, null=True)
+    cartridges = models.IntegerField(blank=True, null=True)
+    shells = models.IntegerField(blank=True, null=True)
+    bombs = models.IntegerField(blank=True, null=True)
+    rockets = models.IntegerField(blank=True, null=True)
+    form = models.CharField(max_length=128)
+    airstart = models.BooleanField()
+    is_pilot = models.BooleanField()
+    payload_id = models.IntegerField(blank=True, null=True)
+    fuel = models.IntegerField(blank=True, null=True)
+    skin = models.CharField(max_length=128)
+
+
 

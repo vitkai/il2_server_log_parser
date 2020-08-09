@@ -20,7 +20,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
-from data.models import Airfield, Mission, Mission_Object
+from data.models import Airfield, Mission, Mission_Object, Player, Player_Craft
 
 logger = logging.getLogger(__name__)
 global mission, tik_last
@@ -371,11 +371,59 @@ def event_airfield(**kwargs):
                           tik = kwargs['tik'], pos_x=kwargs['pos']['x'], pos_y=kwargs['pos']['y'],
                           pos_z=kwargs['pos']['z'])
         airfield.save()
-    pass
 
 
-def event_player_plane():
-    pass
+def player_upd(**kwargs):
+    if Player.objects.filter(profile_id=kwargs['profile_id'], account_id=kwargs['account_id']).exists():
+        logger.info(f"Player [{kwargs['profile_id']}] - exists in the DB")
+        player = Player.objects.get(profile_id=kwargs['profile_id'], account_id=kwargs['account_id'])
+    else:
+        # Add Player
+        name = ''
+        if 'name' in kwargs:
+            name = kwargs['name']
+        player = Player(profile_id=kwargs['profile_id'], account_id=kwargs['account_id'], name=name)
+        player.save()
+
+    return player
+
+
+def event_player_plane(**kwargs):
+    player = player_upd(**kwargs)
+    #player = player.id
+    #print(f"Player={player}")
+
+    mission_obj = Mission_Object.objects.get(object_id=kwargs['aircraft_id'])
+    #mission_obj = mission_obj.object_id
+    #print(f"Object=object_id[{mission_obj.object_id}], object_name[{mission_obj.object_name}]")
+    #print(f"Object={mission_obj}")
+
+    pos_x = kwargs['pos']['x']
+    pos_y = kwargs['pos']['y']
+    pos_z = kwargs['pos']['z']
+
+    bot_id = kwargs["bot_id"]
+    cartridges = kwargs["cartridges"]
+    shells = kwargs["shells"]
+    bombs = kwargs["bombs"]
+    rockets = kwargs["rockets"]
+    form = kwargs["form"]
+    airstart = kwargs["airstart"]
+    is_pilot = kwargs["is_pilot"]
+    payload_id = kwargs["payload_id"]
+    fuel = kwargs["fuel"]
+    skin = kwargs["skin"]
+
+    if Player_Craft.objects.filter(player=player, mission_object=mission_obj).exists():
+        logger.info(f"Player_Craft [{mission_obj}] - exists in the DB")
+    else:
+        # Add player craft
+        player_craft = Player_Craft.objects.create(player=player, mission_object=mission_obj, bot_id=bot_id,
+                                                   cartridges=cartridges, shells=shells, bombs=bombs, rockets=rockets,
+                                                   form=form, airstart=airstart, is_pilot=is_pilot,
+                                                   payload_id=payload_id, fuel=fuel, skin=skin,
+                                                   pos_x=pos_x, pos_y=pos_y, pos_z=pos_z)
+        player_craft.save()
 
 
 def event_group(**kwargs):
@@ -398,9 +446,9 @@ def event_game_object(**kwargs):
 
         # Add object
         object = Mission_Object(mission=mission, object_id=kwargs['object_id'], parent_id=kwargs['parent_id'],
-                                object_name = kwargs['object_name'], name = kwargs['name'],
-                                country_id = kwargs['country_id'], tik = kwargs['tik'], date_spawn = date_spawn,
-                                game_date_spawn = game_date_spawn)
+                                object_name=kwargs['object_name'], name=kwargs['name'],
+                                country_id=kwargs['country_id'], tik=kwargs['tik'], date_spawn = date_spawn,
+                                game_date_spawn=game_date_spawn)
         object.save()
     pass
 
