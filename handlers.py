@@ -23,6 +23,7 @@ application = get_wsgi_application()
 from data.models import Mission
 
 logger = logging.getLogger(__name__)
+global mission
 
 GAME_CLASSES = (
     'CAeroplaneFragment',
@@ -313,13 +314,10 @@ param_handlers = {
 
 
 def event_mission_start(**kwargs):
-    mission = Mission.objects.filter(timestamp=mission_timestamp)
-    if Mission.objects.filter(timestamp=mission_timestamp).exists():
-        logger.info(f'{mission_timestamp} - exists in the DB')
-        # return
-    else:
-        real_date = time_zone.localize(datetime.fromtimestamp(mission_timestamp))
-        real_date = real_date.astimezone(pytz.UTC)
+    global mission
+
+    mission.game_date = kwargs['date']
+    mission.save()
     pass
 
 
@@ -417,11 +415,16 @@ event_handlers = (event_mission_start, event_hit, event_damage, event_kill, even
                   event_bot_deinitialization, event_pos_changed, event_bot_eject_leave, event_round_end,
                   event_player_connected, event_player_disconnected, event_tank_travel)
 
+
 def check_mission(mis_name):
+    global mission
+
     time_zone = pytz.timezone(settings.MISSION_REPORT_TZ)
     mission_timestamp = int(time.mktime(time.strptime(mis_name, '%Y-%m-%d_%H-%M-%S')))
 
-    if Mission.objects.filter(timestamp=mission_timestamp).exists():
+    mission = Mission.objects.get(timestamp=mission_timestamp)
+    #if Mission.objects.filter(timestamp=mission_timestamp).exists():
+    if mission:
         logger.info(f'{mission_timestamp} - exists in the DB')
         # return
     else:

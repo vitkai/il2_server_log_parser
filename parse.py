@@ -23,7 +23,7 @@ from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
 # own function to handle an uploaded file
-from handlers import atype_handlers, param_handlers, check_mission, proc_data#, event_handlers
+from handlers import atype_handlers, param_handlers, proc_data#check_mission, event_handlers
 from data.models import Mission_Log#Mission,
 
 class UnexpectedATypeWarning(Warning):
@@ -73,18 +73,16 @@ def parse_line(line):
         mission.save()
 """
 
-def parse_data(files_to_proc, log_path):
+def parse_data(work_fl):
     """
     parsing of log file
-    :param files_to_proc: Mission_Log[]: list of Mission_Log object corresponding to the log files to be processed
-    :param log_path: path to log files dir
+    :param work_fl: path to log file to process
     :return: something
     """
-    rec: Mission_Log
+    """rec: Mission_Log
     parse_result = ''
     # lines = []
 
-    #for work_fl in files_to_proc:
     for rec in files_to_proc:
         check_mission(rec.name)
         file_path = 'missionReport(' + str(rec.name) + ')[' + str(rec.miss_log_id) + '].txt'
@@ -92,41 +90,35 @@ def parse_data(files_to_proc, log_path):
 
         work_fl = os.path.join(log_path, file_path)
         # work_fl = full_path + '\\' + file_path
-        logger.debug(f'processing file: [{work_fl}]')
-        with open(work_fl, mode='r') as f:
-            for line in f:
-                # ignore "bad" strings
-                if 'AType' not in line:
-                    logger.warning('ignored bad string: [{}]'.format(line))
-                    continue
-                # lines.append(line)
+        logger.debug(f'processing file: [{work_fl}]')"""
+    with open(work_fl, mode='r') as f:
+        for line in f:
+            # ignore "bad" strings
+            if 'AType' not in line:
+                logger.warning('ignored bad string: [{}]'.format(line))
+                continue
+            # lines.append(line)
 
-                try:
-                    #logger.debug(f'processing line:\n{line.strip()}')
-                    parse_result = parse_line(line)
-                    proc_data(parse_result)
-                    """#atype_id = parse_result.pop('atype_id')
-                    atype_id = parse_result['atype_id']
-                    logger.debug(f"atype_id = {atype_id}")
-                    logger.debug(f"event_handlers[atype_id] = {event_handlers[atype_id]}")
-                    event_handlers[atype_id](**parse_result)"""
+            try:
+                #logger.debug(f'processing line:\n{line.strip()}')
+                parse_result = parse_line(line)
+                proc_data(parse_result)
+                """#atype_id = parse_result.pop('atype_id')
+                atype_id = parse_result['atype_id']
+                logger.debug(f"atype_id = {atype_id}")
+                logger.debug(f"event_handlers[atype_id] = {event_handlers[atype_id]}")
+                event_handlers[atype_id](**parse_result)"""
 
-                    """except AttributeError:
-                    logger.error('bad line: [{}]'.format(line.strip()))
-                    continue
-                    except UnexpectedATypeWarning:
-                    logger.warning('unexpected atype: [{}]'.format(line))
-                    continue"""
-                except Exception as err:
-                    print("Unexpected error:", err)
-                    raise
+                """except AttributeError:
+                logger.error('bad line: [{}]'.format(line.strip()))
+                continue
+                except UnexpectedATypeWarning:
+                logger.warning('unexpected atype: [{}]'.format(line))
+                continue"""
+            except Exception as err:
+                print("Unexpected error:", err)
+                raise
 
-    # logger.debug(f'atype_handlers: {atype_handlers}')
-
-    logger.debug("That's all folks")
-    print("\nThat's all folks")
-
-    #return parse_result
 
 
 # main starts here

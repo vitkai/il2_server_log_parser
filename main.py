@@ -20,6 +20,7 @@ application = get_wsgi_application()
 # My application specific imports
 from data.models import *
 from my_logger import logging_setup
+from handlers import check_mission
 from parse import parse_data
 
 
@@ -83,8 +84,6 @@ def get_files_lst(log_path, log_ptrn):
 
     #folder_ptrn = os.path.join(full_path, log_path)  # + log_ptrn
     folder_ptrn = Path(log_path)  # + log_ptrn
-    #folder_ptrn = Path(full_path + log_path) # + log_ptrn
-    # folder_ptrn = full_path + log_path + 'missionReport*[[]0[]].txt'
 
     # lst = glob.escape(folder_ptrn)
     lst = folder_ptrn.glob(log_ptrn)
@@ -140,20 +139,22 @@ def main():
     logger.debug(msg)
 
     log_dir_path = os.path.join(full_path, conf['settings']['log_path'])
-    #log_path = os.path.join(full_path, conf['settings']['log_path'])
-
-    #print(f'log_dir_path: {log_dir_path}')
 
     #tst_user()
 
-    #files = (full_path + '\media\log_samples\missionReport(2020-07-16_20-55-42)[0].txt',)
-    #files = get_files_lst(conf['settings']['log_path'], conf['settings']['log_ptrn'])
     files = get_files_lst(log_dir_path, conf['settings']['log_ptrn'])
 
     """msg = f'files to process list:\n{files}'
     logger.debug(msg)"""
 
-    parse_data(files, log_dir_path)
+
+    for rec in files:
+        check_mission(rec.name)
+        file_path = 'missionReport(' + str(rec.name) + ')[' + str(rec.miss_log_id) + '].txt'
+
+        work_fl = os.path.join(log_dir_path, file_path)
+        logger.debug(f'processing file: [{work_fl}]')
+        parse_data(work_fl)
 
     print("\nThat's all folks")
 
