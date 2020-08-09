@@ -20,7 +20,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
-from data.models import Mission, Mission_Object
+from data.models import Airfield, Mission, Mission_Object
 
 logger = logging.getLogger(__name__)
 global mission, tik_last
@@ -355,11 +355,26 @@ def event_mission_result():
 
 def event_airfield(**kwargs):
     # airfield initialization event
-    logger.debug('Event handler for [airfield initialization] is empty')
+    #logger.debug('Event handler for [airfield initialization] is empty')
+    """
+    mission = models.ForeignKey(Mission, on_delete=models.CASCADE)
+    airfield_id = models.IntegerField(unique=True)
+    country_id = models.IntegerField()
+    tik = models.IntegerField()"""
+
+    if Airfield.objects.filter(mission=mission, airfield_id=kwargs['airfield_id']).exists():
+        logger.info(f"Airfield [{kwargs['airfield_id']}] - exists in the DB")
+        # return
+    else:
+        # Add airfield
+        airfield = Airfield(mission=mission, airfield_id=kwargs['airfield_id'], country_id = kwargs['country_id'],
+                          tik = kwargs['tik'], pos_x=kwargs['pos']['x'], pos_y=kwargs['pos']['y'],
+                          pos_z=kwargs['pos']['z'])
+        airfield.save()
     pass
 
 
-def event_player():
+def event_player_plane():
     pass
 
 
@@ -381,7 +396,7 @@ def event_game_object(**kwargs):
         date_spawn = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
         game_date_spawn = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
 
-        # Add mission
+        # Add object
         object = Mission_Object(mission=mission, object_id=kwargs['object_id'], parent_id=kwargs['parent_id'],
                                 object_name = kwargs['object_name'], name = kwargs['name'],
                                 country_id = kwargs['country_id'], tik = kwargs['tik'], date_spawn = date_spawn,
@@ -432,7 +447,7 @@ def event_tank_travel():
 
 
 event_handlers = (event_mission_start, event_hit, event_damage, event_kill, event_sortie_end, event_takeoff,
-                  event_landing, event_mission_end, event_mission_result, event_airfield, event_player, event_group,
+                  event_landing, event_mission_end, event_mission_result, event_airfield, event_player_plane, event_group,
                   event_game_object, event_influence_area, event_influence_area_boundary, event_log_version,
                   event_bot_deinitialization, event_pos_changed, event_bot_eject_leave, event_round_end,
                   event_player_connected, event_player_disconnected, event_tank_travel)

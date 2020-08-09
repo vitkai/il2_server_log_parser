@@ -452,3 +452,13 @@ class Mission_Object(models.Model):
     game_date_spawn = models.DateTimeField(blank=True, null=True)
     parent_id = models.IntegerField(blank=True, null=True) # self.object_id
 
+
+class Airfield(models.Model):
+    mission = models.ForeignKey(Mission, on_delete=models.CASCADE)
+    airfield_id = models.IntegerField(unique=True)
+    country_id = models.IntegerField()
+    tik = models.IntegerField()
+    pos_x = models.FloatField(blank=True, null=True)
+    pos_y = models.FloatField(blank=True, null=True)
+    pos_z = models.FloatField(blank=True, null=True)
+

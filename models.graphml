@@ -17,7 +17,7 @@
     <node id="n0">
       <data key="d6">
         <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
-          <y:Geometry height="129.0" width="216.5" x="607.5" y="475.5"/>
+          <y:Geometry height="129.0" width="216.5" x="607.5" y="655.5"/>
           <y:Fill color="#E8EEF7" color2="#B7C9E3" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
           <y:NodeLabel alignment="center" autoSizePolicy="content" backgroundColor="#B7C9E3" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" height="18.701171875" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="t" textColor="#000000" verticalTextPosition="bottom" visible="true" width="44.67578125" x="85.912109375" xml:space="preserve" y="4.0">Mission</y:NodeLabel>
@@ -166,7 +166,7 @@ name: String<y:LabelModel><y:ErdAttributesNodeLabelModel/></y:LabelModel><y:Mode
     <node id="n6">
       <data key="d6">
         <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
-          <y:Geometry height="129.0" width="201.5" x="0.0" y="640.5"/>
+          <y:Geometry height="129.0" width="201.5" x="0.0" y="820.5"/>
           <y:Fill color="#E8EEF7" color2="#B7C9E3" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
           <y:NodeLabel alignment="center" autoSizePolicy="content" backgroundColor="#B7C9E3" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" height="18.701171875" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="t" textColor="#000000" verticalTextPosition="bottom" visible="true" width="82.03515625" x="59.732421875" xml:space="preserve" y="4.0">Mission_Event</y:NodeLabel>
@@ -193,13 +193,13 @@ type: [...]
     <node id="n7">
       <data key="d6">
         <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
-          <y:Geometry height="172.0" width="216.5" x="337.5" y="454.0"/>
+          <y:Geometry height="172.0" width="216.5" x="322.5" y="454.0"/>
           <y:Fill color="#E8EEF7" color2="#B7C9E3" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
           <y:NodeLabel alignment="center" autoSizePolicy="content" backgroundColor="#B7C9E3" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" height="18.701171875" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="t" textColor="#000000" verticalTextPosition="bottom" visible="true" width="86.03125" x="65.234375" xml:space="preserve" y="4.0">Mission_Object</y:NodeLabel>
           <y:NodeLabel alignment="left" autoSizePolicy="content" configuration="com.yworks.entityRelationship.label.attributes" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="136.310546875" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="top" visible="true" width="190.099609375" x="2.0" xml:space="preserve" y="30.701171875">object_id: Int
-object_name: String
 mission: ForeignKey(Mission)
+object_name: String
 name:String
 country_id: Int
 tik: Int
@@ -220,11 +220,39 @@ parent_id: Int (self.object_id) <y:LabelModel><y:ErdAttributesNodeLabelModel/></
         </y:GenericNode>
       </data>
     </node>
+    <node id="n8">
+      <data key="d6">
+        <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
+          <y:Geometry height="141.45640473627554" width="216.5" x="322.5" y="649.2717976318622"/>
+          <y:Fill color="#E8EEF7" color2="#B7C9E3" transparent="false"/>
+          <y:BorderStyle color="#000000" type="line" width="1.0"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" backgroundColor="#B7C9E3" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" height="18.701171875" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="t" textColor="#000000" verticalTextPosition="bottom" visible="true" width="40.6796875" x="87.91015625" xml:space="preserve" y="4.0">Airfield</y:NodeLabel>
+          <y:NodeLabel alignment="left" autoSizePolicy="content" configuration="com.yworks.entityRelationship.label.attributes" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="106.908203125" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="top" visible="true" width="161.376953125" x="2.0" xml:space="preserve" y="30.701171875">airfield_id: Int
+mission: ForeignKey(Mission)
+country_id: Int
+tik: Int
+pos_x
+pos_y
+pos_z<y:LabelModel><y:ErdAttributesNodeLabelModel/></y:LabelModel><y:ModelParameter><y:ErdAttributesNodeLabelModelParameter/></y:ModelParameter></y:NodeLabel>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="4.0" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="4.0" x="134.01440922190204" y="87.1175349838536">
+            <y:LabelModel>
+              <y:SmartNodeLabelModel distance="4.0"/>
+            </y:LabelModel>
+            <y:ModelParameter>
+              <y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.12824207492795392" nodeRatioY="0.13" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/>
+            </y:ModelParameter>
+          </y:NodeLabel>
+          <y:StyleProperties>
+            <y:Property class="java.lang.Boolean" name="y.view.ShadowNodePainter.SHADOW_PAINTING" value="true"/>
+          </y:StyleProperties>
+        </y:GenericNode>
+      </data>
+    </node>
     <edge id="e0" source="n0" target="n1">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="-108.25" sy="-15.0" tx="159.375" ty="15.0">
-            <y:Point x="580.75" y="525.0"/>
+          <y:Path sx="-108.25" sy="-30.0" tx="159.375" ty="15.0">
+            <y:Point x="580.75" y="690.0"/>
             <y:Point x="580.75" y="360.0"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
@@ -284,7 +312,7 @@ parent_id: Int (self.object_id) <y:LabelModel><y:ErdAttributesNodeLabelModel/></
         <y:PolyLineEdge>
           <y:Path sx="-159.375" sy="0.0" tx="100.75" ty="-15.0">
             <y:Point x="220.75" y="345.0"/>
-            <y:Point x="220.75" y="690.0"/>
+            <y:Point x="220.75" y="870.0"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="crows_foot_one" target="none"/>
@@ -296,8 +324,8 @@ parent_id: Int (self.object_id) <y:LabelModel><y:ErdAttributesNodeLabelModel/></
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="-108.25" sy="15.0" tx="100.75" ty="0.0">
-            <y:Point x="580.75" y="555.0"/>
-            <y:Point x="580.75" y="705.0"/>
+            <y:Point x="565.75" y="735.0"/>
+            <y:Point x="565.75" y="885.0"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="crows_foot_one" target="none"/>
@@ -306,6 +334,20 @@ parent_id: Int (self.object_id) <y:LabelModel><y:ErdAttributesNodeLabelModel/></
       </data>
     </edge>
     <edge id="e7" source="n0" target="n7">
+      <data key="d9"/>
+      <data key="d10">
+        <y:PolyLineEdge>
+          <y:Path sx="-108.25" sy="-15.0" tx="108.25" ty="0.0">
+            <y:Point x="565.75" y="705.0"/>
+            <y:Point x="565.75" y="540.0"/>
+          </y:Path>
+          <y:LineStyle color="#000000" type="line" width="1.0"/>
+          <y:Arrows source="crows_foot_one" target="none"/>
+          <y:BendStyle smoothed="false"/>
+        </y:PolyLineEdge>
+      </data>
+    </edge>
+    <edge id="e8" source="n0" target="n8">
       <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
