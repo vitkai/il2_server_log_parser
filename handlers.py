@@ -11,7 +11,7 @@ import re
 import time
 
 from django.conf import settings
-from datetime import datetime
+from datetime import datetime, timedelta
 from ast import literal_eval
 
 # Django specific settings
@@ -20,10 +20,10 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
-from data.models import Mission
+from data.models import Mission, Mission_Object
 
 logger = logging.getLogger(__name__)
-global mission
+global mission, tik_last
 
 GAME_CLASSES = (
     'CAeroplaneFragment',
@@ -353,7 +353,9 @@ def event_mission_result():
     pass
 
 
-def event_airfield():
+def event_airfield(**kwargs):
+    # airfield initialization event
+    logger.debug('Event handler for [airfield initialization] is empty')
     pass
 
 
@@ -367,7 +369,23 @@ def event_group(**kwargs):
     pass
 
 
-def event_game_object():
+def event_game_object(**kwargs):
+    # object = Mission_Object.objects.get(mission=mission, object_id=kwargs['object_id'])
+
+    #if object:
+    if Mission_Object.objects.filter(mission=mission, object_id=kwargs['object_id'], object_name=kwargs['object_name'],
+                                     name=kwargs['name']).exists():
+        logger.info(f"Object [{kwargs['object_id']}] - exists in the DB")
+        # return
+    else:
+        date_spawn = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
+        game_date_spawn = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
+
+        # Add mission
+        object = Mission_Object(mission=mission, object_id=kwargs['object_id'], object_name = kwargs['object_name'],
+                                name = kwargs['name'], country_id = kwargs['country_id'], tik = kwargs['tik'],
+                                date_spawn = date_spawn, game_date_spawn = game_date_spawn)
+        object.save()
     pass
 
 
@@ -420,16 +438,16 @@ event_handlers = (event_mission_start, event_hit, event_damage, event_kill, even
 
 
 def check_mission(mis_name):
-    global mission
+    global mission, tik_last
 
     time_zone = pytz.timezone(settings.MISSION_REPORT_TZ)
     mission_timestamp = int(time.mktime(time.strptime(mis_name, '%Y-%m-%d_%H-%M-%S')))
 
-    mission = Mission.objects.get(timestamp=mission_timestamp)
-    #if Mission.objects.filter(timestamp=mission_timestamp).exists():
-    if mission:
-        logger.info(f'{mission_timestamp} - exists in the DB')
-        # return
+    #mission = Mission.objects.get(timestamp=mission_timestamp)
+    #if mission:
+    if Mission.objects.filter(timestamp=mission_timestamp).exists():
+        logger.info(f"{mission_timestamp} - exists in the DB")
+        mission = Mission.objects.get(timestamp=mission_timestamp)
     else:
         real_date = time_zone.localize(datetime.fromtimestamp(mission_timestamp))
         real_date = real_date.astimezone(pytz.UTC)
@@ -439,9 +457,17 @@ def check_mission(mis_name):
                           duration=0)
         mission.save()
 
-def proc_data(line):
+        tik_last = 0
+
+def proc_data(data):
+    global tik_last
+
     # atype_id = parse_result.pop('atype_id')
-    atype_id = line['atype_id']
+    atype_id = data['atype_id']
     logger.debug(f"atype_id = {atype_id}")
     logger.debug(f"event_handlers[atype_id] = {event_handlers[atype_id]}")
-    event_handlers[atype_id](**line)
+
+    """if data['tik'] > tik_last:
+        tik_last = data['tik']
+    """
+    event_handlers[atype_id](**data)

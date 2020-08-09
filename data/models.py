@@ -429,7 +429,7 @@ class Sortie(models.Model):
 
 
 # Mission Events class
-class Mission_Events(models.Model):
+class Mission_Event(models.Model):
     # name = models.CharField(max_length=256, blank=True, db_index=True)
 
     mission = models.ForeignKey(Mission, on_delete=models.CASCADE)
@@ -439,4 +439,15 @@ class Mission_Events(models.Model):
     # tik = models.IntegerField(db_index=True)
     # data = models.JSONField(default=dict)
 
+
+class Mission_Object(models.Model):
+    mission = models.ForeignKey(Mission, on_delete=models.CASCADE)
+    #object_id = models.IntegerField(unique=True)
+    object_id = models.IntegerField()
+    object_name = models.CharField(max_length=128)
+    name = models.CharField(max_length=128)
+    country_id = models.IntegerField()
+    tik = models.IntegerField()
+    date_spawn = models.DateTimeField(blank=True, null=True)
+    game_date_spawn = models.DateTimeField(blank=True, null=True)
 
