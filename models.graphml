@@ -17,16 +17,17 @@
     <node id="n0">
       <data key="d6">
         <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
-          <y:Geometry height="114.5" width="216.5" x="607.5" y="467.75"/>
+          <y:Geometry height="129.0" width="216.5" x="607.5" y="475.5"/>
           <y:Fill color="#E8EEF7" color2="#B7C9E3" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
           <y:NodeLabel alignment="center" autoSizePolicy="content" backgroundColor="#B7C9E3" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" height="18.701171875" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="t" textColor="#000000" verticalTextPosition="bottom" visible="true" width="44.67578125" x="85.912109375" xml:space="preserve" y="4.0">Mission</y:NodeLabel>
-          <y:NodeLabel alignment="left" autoSizePolicy="content" configuration="com.yworks.entityRelationship.label.attributes" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="77.505859375" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="top" visible="true" width="205.09375" x="2.0" xml:space="preserve" y="30.701171875">name:String
+          <y:NodeLabel alignment="left" autoSizePolicy="content" configuration="com.yworks.entityRelationship.label.attributes" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="92.20703125" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="top" visible="true" width="205.09375" x="2.0" xml:space="preserve" y="30.701171875">timestamp: IntegerField(unique=True)
+name:String
 date_start:DateTimeField
 date_end:DateTimeField
 duration:Int
-timestamp: IntegerField(unique=True)<y:LabelModel><y:ErdAttributesNodeLabelModel/></y:LabelModel><y:ModelParameter><y:ErdAttributesNodeLabelModelParameter/></y:ModelParameter></y:NodeLabel>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="4.0" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="4.0" x="134.01440922190204" y="70.13499999999999">
+game_date:DateTimeField<y:LabelModel><y:ErdAttributesNodeLabelModel/></y:LabelModel><y:ModelParameter><y:ErdAttributesNodeLabelModelParameter/></y:ModelParameter></y:NodeLabel>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="4.0" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="4.0" x="134.01440922190204" y="79.26999999999998">
             <y:LabelModel>
               <y:SmartNodeLabelModel distance="4.0"/>
             </y:LabelModel>
@@ -165,7 +166,7 @@ name: String<y:LabelModel><y:ErdAttributesNodeLabelModel/></y:LabelModel><y:Mode
     <node id="n6">
       <data key="d6">
         <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
-          <y:Geometry height="129.0" width="201.5" x="0.0" y="460.5"/>
+          <y:Geometry height="129.0" width="201.5" x="0.0" y="475.5"/>
           <y:Fill color="#E8EEF7" color2="#B7C9E3" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
           <y:NodeLabel alignment="center" autoSizePolicy="content" backgroundColor="#B7C9E3" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" height="18.701171875" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="t" textColor="#000000" verticalTextPosition="bottom" visible="true" width="88.03515625" x="56.732421875" xml:space="preserve" y="4.0">Mission_Events</y:NodeLabel>
@@ -193,7 +194,7 @@ data: JSONField(default=dict)<y:LabelModel><y:ErdAttributesNodeLabelModel/></y:L
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="-108.25" sy="-15.0" tx="159.375" ty="15.0">
-            <y:Point x="580.75" y="510.0"/>
+            <y:Point x="580.75" y="525.0"/>
             <y:Point x="580.75" y="360.0"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
@@ -249,12 +250,11 @@ data: JSONField(default=dict)<y:LabelModel><y:ErdAttributesNodeLabelModel/></y:L
       </data>
     </edge>
     <edge id="e5" source="n1" target="n6">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="-159.375" sy="0.0" tx="100.75" ty="-15.0">
             <y:Point x="220.75" y="345.0"/>
-            <y:Point x="220.75" y="510.0"/>
+            <y:Point x="220.75" y="525.0"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="crows_foot_one" target="none"/>
@@ -263,7 +263,6 @@ data: JSONField(default=dict)<y:LabelModel><y:ErdAttributesNodeLabelModel/></y:L
       </data>
     </edge>
     <edge id="e6" source="n0" target="n6">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="-108.25" sy="0.0" tx="100.75" ty="0.0"/>

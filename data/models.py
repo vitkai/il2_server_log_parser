@@ -29,6 +29,7 @@ class Mission(models.Model):
     date_start = models.DateTimeField(db_index=True)
     date_end = models.DateTimeField()
     duration = models.IntegerField(default=0)
+    game_date = models.DateTimeField(null=True, blank=True)
 
 
 class Score(models.Model):

@@ -23,8 +23,8 @@ from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
 # own function to handle an uploaded file
-from handlers import atype_handlers, param_handlers, event_handlers
-from data.models import Mission, Mission_Log
+from handlers import atype_handlers, param_handlers, check_mission, proc_data#, event_handlers
+from data.models import Mission_Log#Mission,
 
 class UnexpectedATypeWarning(Warning):
     pass
@@ -56,7 +56,7 @@ def parse_line(line):
         raise UnexpectedATypeWarning
 
 
-def check_mission(mis_name):
+"""def check_mission(mis_name):
     time_zone = pytz.timezone(settings.MISSION_REPORT_TZ)
     mission_timestamp = int(time.mktime(time.strptime(mis_name, '%Y-%m-%d_%H-%M-%S')))
 
@@ -71,7 +71,7 @@ def check_mission(mis_name):
         mission = Mission(name=mis_name, timestamp=mission_timestamp, date_start=real_date, date_end=real_date,
                           duration=0)
         mission.save()
-
+"""
 
 def parse_data(files_to_proc, log_path):
     """
@@ -104,11 +104,12 @@ def parse_data(files_to_proc, log_path):
                 try:
                     #logger.debug(f'processing line:\n{line.strip()}')
                     parse_result = parse_line(line)
-                    #atype_id = parse_result.pop('atype_id')
+                    proc_data(parse_result)
+                    """#atype_id = parse_result.pop('atype_id')
                     atype_id = parse_result['atype_id']
                     logger.debug(f"atype_id = {atype_id}")
                     logger.debug(f"event_handlers[atype_id] = {event_handlers[atype_id]}")
-                    event_handlers[atype_id](**parse_result)
+                    event_handlers[atype_id](**parse_result)"""
 
                     """except AttributeError:
                     logger.error('bad line: [{}]'.format(line.strip()))
@@ -125,7 +126,7 @@ def parse_data(files_to_proc, log_path):
     logger.debug("That's all folks")
     print("\nThat's all folks")
 
-    return parse_result
+    #return parse_result
 
 
 # main starts here

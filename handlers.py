@@ -3,12 +3,26 @@ Descr: main module to operate log parsing
 @author: vaal, corvit
 Created: Fri Jul 24 2020 13:45 MSK
 """
-from datetime import datetime
 import functools
+import logging
+import os
+import pytz
 import re
+import time
 
+from django.conf import settings
+from datetime import datetime
 from ast import literal_eval
 
+# Django specific settings
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
+# Ensure settings are read
+from django.core.wsgi import get_wsgi_application
+application = get_wsgi_application()
+
+from data.models import Mission
+
+logger = logging.getLogger(__name__)
 
 GAME_CLASSES = (
     'CAeroplaneFragment',
@@ -103,9 +117,7 @@ GAME_CLASSES = (
 
 @functools.lru_cache(maxsize=1024)
 def object_name_handler(type_):
-    """
-    :type type_: str
-    """
+    # :type type_: str
     if type_.startswith(GAME_CLASSES):
         return type_.split('_')[0]
     else:
@@ -300,7 +312,14 @@ param_handlers = {
 }
 
 
-def event_mission_start():
+def event_mission_start(**kwargs):
+    mission = Mission.objects.filter(timestamp=mission_timestamp)
+    if Mission.objects.filter(timestamp=mission_timestamp).exists():
+        logger.info(f'{mission_timestamp} - exists in the DB')
+        # return
+    else:
+        real_date = time_zone.localize(datetime.fromtimestamp(mission_timestamp))
+        real_date = real_date.astimezone(pytz.UTC)
     pass
 
 
@@ -380,7 +399,7 @@ def event_round_end():
     pass
 
 
-def event_player_connected():
+def event_player_connected(**kwargs):
     pass
 
 
@@ -397,3 +416,26 @@ event_handlers = (event_mission_start, event_hit, event_damage, event_kill, even
                   event_game_object, event_influence_area, event_influence_area_boundary, event_log_version,
                   event_bot_deinitialization, event_pos_changed, event_bot_eject_leave, event_round_end,
                   event_player_connected, event_player_disconnected, event_tank_travel)
+
+def check_mission(mis_name):
+    time_zone = pytz.timezone(settings.MISSION_REPORT_TZ)
+    mission_timestamp = int(time.mktime(time.strptime(mis_name, '%Y-%m-%d_%H-%M-%S')))
+
+    if Mission.objects.filter(timestamp=mission_timestamp).exists():
+        logger.info(f'{mission_timestamp} - exists in the DB')
+        # return
+    else:
+        real_date = time_zone.localize(datetime.fromtimestamp(mission_timestamp))
+        real_date = real_date.astimezone(pytz.UTC)
+
+        # Add mission
+        mission = Mission(name=mis_name, timestamp=mission_timestamp, date_start=real_date, date_end=real_date,
+                          duration=0)
+        mission.save()
+
+def proc_data(line):
+    # atype_id = parse_result.pop('atype_id')
+    atype_id = line['atype_id']
+    logger.debug(f"atype_id = {atype_id}")
+    logger.debug(f"event_handlers[atype_id] = {event_handlers[atype_id]}")
+    event_handlers[atype_id](**line)
