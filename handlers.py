@@ -343,7 +343,7 @@ def event_takeoff():
     logger.debug('Event handler for [event_takeoff] is empty')
 
 
-def  event_landing():
+def event_landing():
     pass
 
 
@@ -388,6 +388,10 @@ def player_upd(**kwargs):
         player.save()
 
     return player
+
+
+def sortie_upd():
+    pass
 
 
 def event_player_plane(**kwargs):
