@@ -337,8 +337,10 @@ def event_sortie_end():
     pass
 
 
+#def event_takeoff(**kwargs):
 def event_takeoff():
-    pass
+    # data: {'tik': 18990, 'aircraft_id': 8195, 'pos': {'x': 119872.8906, 'y': 77.0816, 'z': 158145.7813}, 'atype_id': 5}
+    logger.debug('Event handler for [event_takeoff] is empty')
 
 
 def  event_landing():
@@ -415,7 +417,7 @@ def event_player_plane(**kwargs):
     skin = kwargs["skin"]
 
     if Player_Craft.objects.filter(player=player, mission_object=mission_obj).exists():
-        logger.info(f"Player_Craft [{mission_obj}] - exists in the DB")
+        logger.debug(f"Player_Craft [{mission_obj}] - exists in the DB")
     else:
         # Add player craft
         player_craft = Player_Craft.objects.create(player=player, mission_object=mission_obj, bot_id=bot_id,

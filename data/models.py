@@ -404,43 +404,6 @@ class Player(models.Model):
     """
 
 
-class Sortie(models.Model):
-    # profile = models.ForeignKey(Profile, related_name='+', on_delete=models.CASCADE)
-    player = models.ForeignKey(Player, related_name='sorties_list', on_delete=models.CASCADE)
-    # tour = models.ForeignKey(Tour, related_name='sorties', on_delete=models.CASCADE)
-    # mission = models.ForeignKey(Mission, related_name='sorties_list', on_delete=models.CASCADE)
-    mission = models.ForeignKey(Mission, on_delete=models.CASCADE)
-    # vlife = models.ForeignKey(VLife, related_name='sorties_list', on_delete=models.CASCADE, blank=True, null=True)
-
-    nickname = models.CharField(max_length=128)
-
-    date_start = models.DateTimeField(blank=True, null=True)
-    date_end = models.DateTimeField(blank=True, null=True)
-    flight_time = models.IntegerField(default=0)
-    """
-    # parent = models.ForeignKey('self', related_name='children', blank=True, null=True, on_delete=models.PROTECT)
-
-    aircraft = models.ForeignKey(Object, related_name='+', on_delete=models.PROTECT)
-
-    fuel = models.IntegerField(default=100)  # в процентах!
-    skin = models.CharField(max_length=256, blank=True)
-    payload_id = models.IntegerField(default=0)
-    weapon_mods_id = ArrayField(models.IntegerField(), default=list)
-    """
-
-
-# Mission Events class
-class Mission_Event(models.Model):
-    # name = models.CharField(max_length=256, blank=True, db_index=True)
-
-    mission = models.ForeignKey(Mission, on_delete=models.CASCADE)
-    sorties = models.ManyToManyField(Sortie)
-
-    timestamp = models.IntegerField(unique=True)
-    # tik = models.IntegerField(db_index=True)
-    # data = models.JSONField(default=dict)
-
-
 class Mission_Object(models.Model):
     mission = models.ForeignKey(Mission, on_delete=models.CASCADE)
     object_id = models.IntegerField(unique=True)
@@ -486,6 +449,60 @@ class Player_Craft(models.Model):
     payload_id = models.IntegerField(blank=True, null=True)
     fuel = models.IntegerField(blank=True, null=True)
     skin = models.CharField(max_length=128)
+
+
+class Sortie(models.Model):
+    nickname = models.CharField(max_length=128)
+
+    player = models.ForeignKey(Player, related_name='sorties_list', on_delete=models.CASCADE)
+    mission = models.ForeignKey(Mission, related_name='sorties_list', on_delete=models.CASCADE)
+    player_craft = models.ForeignKey(Player_Craft, on_delete=models.CASCADE)
+
+    type = (
+        ('Pilot', 'plane pilot'),
+        ('Gunner', 'plane gunner'),
+        ('Tankman', 'tank player'),
+        ('Tank_Gunner', 'Tank_Gunner'))
+
+    player_role = models.CharField(max_length=25, choices=type, editable=False, default='Pilot')
+
+    date_start = models.DateTimeField(blank=True, null=True)
+    date_end = models.DateTimeField(blank=True, null=True)
+    date_takeoff = models.DateTimeField(blank=True, null=True)
+    date_land = models.DateTimeField(blank=True, null=True)
+
+    flight_time = models.IntegerField(default=0)
+
+    is_alive = models.BooleanField(default=True)
+    is_damaged = models.BooleanField(default=False)
+    hits = models.BooleanField(default=False)   # whether player did any damage
+
+    # mission = models.ForeignKey(Mission, on_delete=models.CASCADE)
+    # profile = models.ForeignKey(Profile, related_name='+', on_delete=models.CASCADE)
+    # tour = models.ForeignKey(Tour, related_name='sorties', on_delete=models.CASCADE)
+    # vlife = models.ForeignKey(VLife, related_name='sorties_list', on_delete=models.CASCADE, blank=True, null=True)
+    """
+    # parent = models.ForeignKey('self', related_name='children', blank=True, null=True, on_delete=models.PROTECT)
+
+    aircraft = models.ForeignKey(Object, related_name='+', on_delete=models.PROTECT)
+
+    fuel = models.IntegerField(default=100)  # в процентах!
+    skin = models.CharField(max_length=256, blank=True)
+    payload_id = models.IntegerField(default=0)
+    weapon_mods_id = ArrayField(models.IntegerField(), default=list)
+    """
+
+
+# Mission Events class
+class Mission_Event(models.Model):
+    # name = models.CharField(max_length=256, blank=True, db_index=True)
+
+    mission = models.ForeignKey(Mission, on_delete=models.CASCADE)
+    sorties = models.ManyToManyField(Sortie)
+
+    timestamp = models.IntegerField(unique=True)
+    # tik = models.IntegerField(db_index=True)
+    # data = models.JSONField(default=dict)
 
 
 
