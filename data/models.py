@@ -467,6 +467,7 @@ class Sortie(models.Model):
     player_role = models.CharField(max_length=25, choices=type, editable=False, default='Pilot')
 
     date_start = models.DateTimeField(blank=True, null=True)
+    # TODO rework date_start since it is the same as Mission_Object.date_spawn
     date_end = models.DateTimeField(blank=True, null=True)
     date_takeoff = models.DateTimeField(blank=True, null=True)
     date_land = models.DateTimeField(blank=True, null=True)

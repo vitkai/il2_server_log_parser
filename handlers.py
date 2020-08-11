@@ -20,7 +20,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
-from data.models import Airfield, Mission, Mission_Object, Player, Player_Craft
+from data.models import Airfield, Mission, Mission_Object, Player, Player_Craft, Sortie
 
 logger = logging.getLogger(__name__)
 global mission, tik_last
@@ -390,8 +390,36 @@ def player_upd(**kwargs):
     return player
 
 
-def sortie_upd():
-    pass
+def sortie_upd(**kwargs):
+    global mission
+
+    date_start = None
+    # TODO rework date_start since it is the same as Mission_Object.date_spawn
+    date_end = None
+    date_takeoff = None
+    date_land = None
+
+    # print(f"kwargs['player_craft'] = {kwargs['player_craft']}")
+    player_craft = kwargs['player_craft']
+
+    if kwargs['sortie_status'] == 'init':
+        date_start = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
+    elif kwargs['sortie_status'] == 'end':
+        date_end = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
+    elif kwargs['sortie_status'] == 'takeoff':
+        date_takeoff = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
+    elif kwargs['sortie_status'] == 'land':
+        date_land = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
+
+    if Sortie.objects.filter(mission=mission, player_craft=player_craft).exists():
+        logger.debug(f"Sortie [{mission_obj}] - exists in the DB")
+        sortie = Sortie.objects.get(player=player, player_craft=player_craft)
+    else:
+        # Add player craft
+        sortie = Sortie.objects.create(mission=mission, player=kwargs['player'], player_craft=player_craft,
+                                             date_start=date_start)
+        sortie.save()
+
 
 
 def event_player_plane(**kwargs):
@@ -422,6 +450,7 @@ def event_player_plane(**kwargs):
 
     if Player_Craft.objects.filter(player=player, mission_object=mission_obj).exists():
         logger.debug(f"Player_Craft [{mission_obj}] - exists in the DB")
+        player_craft = Player_Craft.objects.get(player=player, mission_object=mission_obj)
     else:
         # Add player craft
         player_craft = Player_Craft.objects.create(player=player, mission_object=mission_obj, bot_id=bot_id,
@@ -430,6 +459,13 @@ def event_player_plane(**kwargs):
                                                    payload_id=payload_id, fuel=fuel, skin=skin,
                                                    pos_x=pos_x, pos_y=pos_y, pos_z=pos_z)
         player_craft.save()
+
+    kwargs['player'] = player
+    kwargs['player_craft'] = player_craft
+    kwargs['sortie_status'] = 'init'
+
+    # create or update Sortie info
+    sortie_upd(**kwargs)
 
 
 def event_group(**kwargs):
