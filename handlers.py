@@ -337,10 +337,20 @@ def event_sortie_end():
     pass
 
 
-#def event_takeoff(**kwargs):
-def event_takeoff():
+def event_takeoff(**kwargs):
+    global mission
+
     # data: {'tik': 18990, 'aircraft_id': 8195, 'pos': {'x': 119872.8906, 'y': 77.0816, 'z': 158145.7813}, 'atype_id': 5}
-    logger.debug('Event handler for [event_takeoff] is empty')
+    # logger.debug('Event handler for [event_takeoff] is empty')
+    player_craft = Mission_Object.objects.get(object_id=kwargs['aircraft_id'], mission_id=mission)
+    print(f'Mission object: {player_craft}')
+    player_craft = Player_Craft.objects.get(mission_object=player_craft)
+    print(f'Player Craft: {player_craft}')
+
+    kwargs['player_craft'] = player_craft
+    kwargs['sortie_status'] = 'takeoff'
+
+    sortie_upd(**kwargs)
 
 
 def event_landing():
@@ -399,30 +409,40 @@ def sortie_upd(**kwargs):
     date_takeoff = None
     date_land = None
 
+    sortie_upd = False
+
     # print(f"kwargs['player_craft'] = {kwargs['player_craft']}")
     player_craft = kwargs['player_craft']
 
-    if kwargs['sortie_status'] == 'init':
-        date_start = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
-    elif kwargs['sortie_status'] == 'end':
-        date_end = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
-    elif kwargs['sortie_status'] == 'takeoff':
-        date_takeoff = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
-    elif kwargs['sortie_status'] == 'land':
-        date_land = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
-
     if Sortie.objects.filter(mission=mission, player_craft=player_craft).exists():
-        logger.debug(f"Sortie [{mission_obj}] - exists in the DB")
-        sortie = Sortie.objects.get(player=player, player_craft=player_craft)
+        #logger.debug(f"Sortie [{mission_obj}] - exists in the DB")
+        sortie = Sortie.objects.get(mission=mission, player_craft=player_craft)
     else:
         # Add player craft
-        sortie = Sortie.objects.create(mission=mission, player=kwargs['player'], player_craft=player_craft,
-                                             date_start=date_start)
+        sortie = Sortie.objects.create(mission=mission, player=kwargs['player'], player_craft=player_craft)
+        sortie_upd = True
+
+    if kwargs['sortie_status'] == 'init':
+        sortie.date_start = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
+        sortie_upd = True
+    elif kwargs['sortie_status'] == 'end':
+        date_end = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
+        sortie_upd = True
+    elif kwargs['sortie_status'] == 'takeoff':
+        sortie.date_takeoff = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
+        sortie_upd = True
+    elif kwargs['sortie_status'] == 'land':
+        date_land = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
+        sortie_upd = True
+
+    if sortie_upd:
         sortie.save()
 
 
 
 def event_player_plane(**kwargs):
+    global mission
+
     player = player_upd(**kwargs)
     #player = player.id
     #print(f"Player={player}")
@@ -453,9 +473,9 @@ def event_player_plane(**kwargs):
         player_craft = Player_Craft.objects.get(player=player, mission_object=mission_obj)
     else:
         # Add player craft
-        player_craft = Player_Craft.objects.create(player=player, mission_object=mission_obj, bot_id=bot_id,
-                                                   cartridges=cartridges, shells=shells, bombs=bombs, rockets=rockets,
-                                                   form=form, airstart=airstart, is_pilot=is_pilot,
+        player_craft = Player_Craft.objects.create(mission=mission, player=player, mission_object=mission_obj,
+                                                   bot_id=bot_id, cartridges=cartridges, shells=shells, bombs=bombs,
+                                                   rockets=rockets, form=form, airstart=airstart, is_pilot=is_pilot,
                                                    payload_id=payload_id, fuel=fuel, skin=skin,
                                                    pos_x=pos_x, pos_y=pos_y, pos_z=pos_z)
         player_craft.save()
