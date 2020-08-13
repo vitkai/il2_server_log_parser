@@ -179,8 +179,8 @@ class Player(models.Model):
     'account_id': '3ba2a5c1-6ac6-4f96-8bfb-963efe9906dd',
     'name': '-DED-Zlodey',
     """
-    profile_id = models.CharField(max_length=40, null=True, db_index=True)
     account_id = models.CharField(max_length=40, null=True, db_index=True)
+    profile_id = models.CharField(max_length=40, null=True, db_index=True)
     name = models.CharField(max_length=128, null=True, db_index=True)
 
     # tour = models.ForeignKey(Tour, related_name='+', on_delete=models.CASCADE)
@@ -500,10 +500,50 @@ class Mission_Event(models.Model):
     # name = models.CharField(max_length=256, blank=True, db_index=True)
 
     mission = models.ForeignKey(Mission, on_delete=models.CASCADE)
-    sorties = models.ManyToManyField(Sortie)
+    sortie = models.ForeignKey(Sortie, blank=True, null=True, on_delete=models.CASCADE)
+    tik = models.IntegerField(blank=True, null=True, db_index=True)
+    player = models.ForeignKey(Player, blank=True, null=True, on_delete=models.CASCADE)
 
-    timestamp = models.IntegerField(unique=True)
-    # tik = models.IntegerField(db_index=True)
+    account_id = models.CharField(max_length=40, null=True, db_index=True)
+    profile_id = models.CharField(max_length=40, null=True, db_index=True)
+
+    area_id = models.IntegerField(blank=True, null=True)
+    atype = models.IntegerField(blank=True, null=True)
+    aircraft_id = models.IntegerField(blank=True, null=True)
+    attacker_id = models.IntegerField(blank=True, null=True)
+    bot_id = models.IntegerField(blank=True, null=True)
+    coal_id = models.IntegerField(blank=True, null=True)
+    country_id = models.IntegerField(blank=True, null=True)
+    icon_type_id = models.IntegerField(blank=True, null=True)
+    group_id = models.IntegerField(blank=True, null=True)
+    # members_id = models.IntegerField(blank=True, null=True)
+    leader_id = models.IntegerField(blank=True, null=True)
+    object_id = models.IntegerField(blank=True, null=True)
+    object_name = models.CharField(max_length=128, blank=True, null=True)
+    parent_id = models.IntegerField(blank=True, null=True)
+    payload_id = models.IntegerField(blank=True, null=True)
+    target_id = models.IntegerField(blank=True, null=True)
+    task_type_id = models.IntegerField(blank=True, null=True)
+    bombs = models.IntegerField(blank=True, null=True)
+    cartridges = models.IntegerField(blank=True, null=True)
+    damage = models.IntegerField(blank=True, null=True)
+    form = models.CharField(max_length=128, blank=True, null=True)
+    fuel = models.IntegerField(blank=True, null=True)
+    rockets = models.IntegerField(blank=True, null=True)
+    shells = models.IntegerField(blank=True, null=True)
+    skin = models.CharField(max_length=128, blank=True, null=True)
+    success = models.IntegerField(blank=True, null=True)
+    # weapon_mods_id = models.IntegerField(blank=True, null=True)
+    enabled = models.BooleanField(default=False)
+    in_air = models.IntegerField(blank=True, null=True)
+    # boundary = models.IntegerField(blank=True, null=True)
+
+
+    pos_x = models.FloatField(blank=True, null=True)
+    pos_y = models.FloatField(blank=True, null=True)
+    pos_z = models.FloatField(blank=True, null=True)
+
+    # timestamp = models.IntegerField(unique=True)
     # data = models.JSONField(default=dict)
 
 
