@@ -20,7 +20,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
-from data.models import Airfield, Mission, Mission_Object, Player, Player_Craft, Sortie
+from data.models import Airfield, Mission, Mission_Event, Mission_Object, Player, Player_Craft, Sortie
 
 logger = logging.getLogger(__name__)
 global mission, tik_last
@@ -309,8 +309,35 @@ param_handlers = {
     'settings': lambda s: tuple(map(int, s)),
     'success': lambda s: s == '1',
     'object_name': object_name_handler,
-    'weapon_mods_id': lambda s: [i for i, wm in enumerate(bin(int(s))[2:-1][::-1], start=1) if wm == '1'],
+    #'weapon_mods_id': lambda s: [i for i, wm in enumerate(bin(int(s))[2:-1][::-1], start=1) if wm == '1'],
+    'weapon_mods_id': int,
 }
+
+
+def pos_to_tup(pos):
+    return (pos['x'], pos['y'], pos['z'])
+
+
+def add_mission_event(**kwargs):
+    # mission_event = Mission_Event(mission=mission)
+    pos = kwargs.pop('pos')
+
+    kwargs['pos_x'], kwargs['pos_y'], kwargs['pos_x'] = pos_to_tup(pos)
+
+    """print(f"Pos: {pos}")
+
+    posx, posy, posz = pos_to_tup(pos)
+    print(f"Pos: x: {posx}, y: {posy}, z: {posz}")
+    # kwargs('pos_x'), kwargs('pos_y'), kwargs('pos_z') = (pos_x, pos_y, pos_z)
+
+    kwargs('pos_x') = posx
+    kwargs('pos_y') = posy
+    kwargs('pos_z') = posz"""
+
+    kwargs['mission'] = mission
+
+    mission_event =Mission_Event.objects.create(**kwargs)
+    mission_event.save()
 
 
 def event_mission_start(**kwargs):
@@ -438,6 +465,8 @@ def sortie_upd(**kwargs):
     if sortie_upd:
         sortie.save()
 
+    kwargs['sortie'] = sortie
+    add_mission_event(**kwargs)
 
 
 def event_player_plane(**kwargs):
