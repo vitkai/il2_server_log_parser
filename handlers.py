@@ -386,8 +386,17 @@ def event_kill():
     pass
 
 
-def event_sortie_end():
-    pass
+def event_sortie_end(**kwargs):
+    # data: {'tik': 25486, 'aircraft_id': 10244, 'bot_id': 11268, 'cartridges': 5175, 'shells': 0, 'bombs': 6,
+    #   'rockets': 0, 'pos': {'x': 119494.9531, 'y': 55.5708, 'z': 156456.7188}, 'atype_id': 4}
+    # logger.debug('Event handler for [event_sortie_end] is empty')
+
+    kwargs['sortie_status'] = 'end'
+    player_craft = Mission_Object.objects.get(object_id=kwargs['aircraft_id'], mission_id=mission)
+    player_craft = Player_Craft.objects.get(mission_object=player_craft)
+    kwargs['player_craft'] = player_craft
+
+    sortie_upd(**kwargs)
 
 
 def event_takeoff(**kwargs):
@@ -477,9 +486,11 @@ def sortie_upd(**kwargs):
 
     if kwargs['sortie_status'] == 'init':
         sortie.date_start = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
+        sortie.damage = 0
         sortie_upd = True
     elif kwargs['sortie_status'] == 'end':
         date_end = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
+        sortie.date_end = date_end
         sortie_upd = True
     elif kwargs['sortie_status'] == 'takeoff':
         sortie.date_takeoff = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
