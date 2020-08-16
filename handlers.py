@@ -319,10 +319,9 @@ def pos_to_tup(pos):
 
 
 def add_mission_event(**kwargs):
-    # mission_event = Mission_Event(mission=mission)
     pos = kwargs.pop('pos')
-
     kwargs['pos_x'], kwargs['pos_y'], kwargs['pos_z'] = pos_to_tup(pos)
+
     kwargs['mission'] = mission
 
     if not Mission_Event.objects.filter(mission=mission, sortie=kwargs['sortie'], tik=kwargs['tik'],
@@ -594,8 +593,21 @@ def event_log_version(tik, version, atype_id):
     pass
 
 
-def event_bot_deinitialization():
-    pass
+def event_bot_deinitialization(**kwargs):
+    global mission
+
+    # data: {'tik': 25490, 'bot_id': 11268, 'pos': {'x': 119496.0469, 'y': 55.8246, 'z': 156457.3438}, 'atype_id': 16}
+    mission_obj = Mission_Object.objects.get(object_id=kwargs['bot_id'])
+    # print(f"mission_obj.parent_id: {mission_obj.parent_id}")
+    if mission_obj.parent_id is not None:
+        mission_obj = Mission_Object.objects.get(object_id=mission_obj.parent_id)
+
+    player_craft = Player_Craft.objects.get(mission_object=mission_obj)
+    kwargs['player_craft'] = player_craft
+    sortie = Sortie.objects.get(mission=mission, player_craft=player_craft)
+    kwargs['sortie'] = sortie
+    kwargs['sortie_status'] = 'bot_deinit'
+    add_mission_event(**kwargs)
 
 
 def event_pos_changed():
@@ -623,10 +635,10 @@ def event_tank_travel():
 
 
 event_handlers = (event_mission_start, event_hit, event_damage, event_kill, event_sortie_end, event_takeoff,
-                  event_landing, event_mission_end, event_mission_result, event_airfield, event_player_plane, event_group,
-                  event_game_object, event_influence_area, event_influence_area_boundary, event_log_version,
-                  event_bot_deinitialization, event_pos_changed, event_bot_eject_leave, event_round_end,
-                  event_player_connected, event_player_disconnected, event_tank_travel)
+                  event_landing, event_mission_end, event_mission_result, event_airfield, event_player_plane,
+                  event_group, event_game_object, event_influence_area, event_influence_area_boundary,
+                  event_log_version, event_bot_deinitialization, event_pos_changed, event_bot_eject_leave,
+                  event_round_end, event_player_connected, event_player_disconnected, event_tank_travel)
 
 
 def check_mission(mis_name):
