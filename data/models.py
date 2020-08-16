@@ -476,8 +476,10 @@ class Sortie(models.Model):
     flight_time = models.IntegerField(default=0)
 
     is_alive = models.BooleanField(default=True)
-    is_damaged = models.BooleanField(default=False)
-    hits = models.BooleanField(default=False)   # whether player did any damage
+    #is_damaged = models.BooleanField(default=False)
+    #hits = models.BooleanField(default=False)   # whether player did any damage
+    damage = models.FloatField(default=0)
+    hits = models.IntegerField(default=0)
 
     # mission = models.ForeignKey(Mission, on_delete=models.CASCADE)
     # profile = models.ForeignKey(Profile, related_name='+', on_delete=models.CASCADE)

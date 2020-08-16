@@ -322,22 +322,13 @@ def add_mission_event(**kwargs):
     # mission_event = Mission_Event(mission=mission)
     pos = kwargs.pop('pos')
 
-    kwargs['pos_x'], kwargs['pos_y'], kwargs['pos_x'] = pos_to_tup(pos)
-
-    """print(f"Pos: {pos}")
-
-    posx, posy, posz = pos_to_tup(pos)
-    print(f"Pos: x: {posx}, y: {posy}, z: {posz}")
-    # kwargs('pos_x'), kwargs('pos_y'), kwargs('pos_z') = (pos_x, pos_y, pos_z)
-
-    kwargs('pos_x') = posx
-    kwargs('pos_y') = posy
-    kwargs('pos_z') = posz"""
-
+    kwargs['pos_x'], kwargs['pos_y'], kwargs['pos_z'] = pos_to_tup(pos)
     kwargs['mission'] = mission
 
-    mission_event =Mission_Event.objects.create(**kwargs)
-    mission_event.save()
+    if not Mission_Event.objects.filter(mission=mission, sortie=kwargs['sortie'], tik=kwargs['tik'],
+                                    atype_id=kwargs['atype_id']).exists():
+        mission_event =Mission_Event.objects.create(**kwargs)
+        mission_event.save()
 
 
 def event_mission_start(**kwargs):
@@ -352,7 +343,42 @@ def event_hit():
     pass
 
 
-def event_damage():
+def event_damage(**kwargs):
+    # data: {'tik': 24925, 'damage': 0.3, 'attacker_id': None, 'target_id': 10244,
+    #               'pos': {'x': 119480.9688, 'y': 56.9919, 'z': 156564.7344}, 'atype_id': 2}
+    # logger.debug('Event handler for [event_damage] is empty')
+
+    # looking for attacker's player craft
+    if (kwargs['attacker_id'] is not None) and \
+            Mission_Object.objects.filter(object_id=kwargs['attacker_id']).exists:
+        attacker = Mission_Object.objects.get(object_id=kwargs['attacker_id'])
+        attacker = Player_Craft.objects.get(mission_obj=attacker)
+
+        sortie = Sortie.objects.get(player_craft=attacker)
+        sortie.hits = sortie.hits + 1
+        sortie.save()
+
+        kwargs['sortie'] = sortie
+        kwargs['sortie_status'] = 'damaged'
+        kwargs['player_craft'] = attacker
+
+        add_mission_event(**kwargs)
+
+    # looking for target's player craft
+    if (kwargs['target_id'] is not None) and \
+            Mission_Object.objects.filter(object_id=kwargs['target_id']).exists:
+        target = Mission_Object.objects.get(object_id=kwargs['target_id'])
+        target = Player_Craft.objects.get(mission_object=target)
+
+        sortie = Sortie.objects.get(player_craft=target)
+        sortie.damage = sortie.damage + kwargs['damage']
+        sortie.save()
+
+        kwargs['sortie'] = sortie
+        kwargs['sortie_status'] = 'was damaged'
+        kwargs['player_craft'] = target
+
+        add_mission_event(**kwargs)
     pass
 
 
@@ -370,9 +396,9 @@ def event_takeoff(**kwargs):
     # data: {'tik': 18990, 'aircraft_id': 8195, 'pos': {'x': 119872.8906, 'y': 77.0816, 'z': 158145.7813}, 'atype_id': 5}
     # logger.debug('Event handler for [event_takeoff] is empty')
     player_craft = Mission_Object.objects.get(object_id=kwargs['aircraft_id'], mission_id=mission)
-    print(f'Mission object: {player_craft}')
+    # print(f'Mission object: {player_craft}')
     player_craft = Player_Craft.objects.get(mission_object=player_craft)
-    print(f'Player Craft: {player_craft}')
+    # print(f'Player Craft: {player_craft}')
 
     kwargs['player_craft'] = player_craft
     kwargs['sortie_status'] = 'takeoff'
