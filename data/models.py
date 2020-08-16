@@ -527,6 +527,8 @@ class Mission_Event(models.Model):
     payload_id = models.IntegerField(blank=True, null=True)
     target_id = models.IntegerField(blank=True, null=True)
     task_type_id = models.IntegerField(blank=True, null=True)
+
+    ammo = sortie_status = models.CharField(max_length=40, blank=True, null=True)
     aircraft_name = models.CharField(max_length=128, blank=True, null=True)
     airstart = models.BooleanField(default=False)
     bombs = models.IntegerField(blank=True, null=True)

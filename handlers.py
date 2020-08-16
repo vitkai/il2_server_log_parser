@@ -319,8 +319,9 @@ def pos_to_tup(pos):
 
 
 def add_mission_event(**kwargs):
-    pos = kwargs.pop('pos')
-    kwargs['pos_x'], kwargs['pos_y'], kwargs['pos_z'] = pos_to_tup(pos)
+    if 'pos' in kwargs:
+        pos = kwargs.pop('pos')
+        kwargs['pos_x'], kwargs['pos_y'], kwargs['pos_z'] = pos_to_tup(pos)
 
     kwargs['mission'] = mission
 
@@ -338,8 +339,9 @@ def event_mission_start(**kwargs):
     pass
 
 
-def event_hit():
-    pass
+def event_hit(**kwargs):
+    # data: {'tik': 36542, 'ammo': 'NPC_SHELL_RUS_25_HE', 'attacker_id': 834560, 'target_id': 9218, 'atype_id': 1}
+    event_damage(**kwargs)
 
 
 def event_damage(**kwargs):
@@ -349,35 +351,40 @@ def event_damage(**kwargs):
 
     # looking for attacker's player craft
     if (kwargs['attacker_id'] is not None) and \
-            Mission_Object.objects.filter(object_id=kwargs['attacker_id']).exists:
+            Mission_Object.objects.filter(object_id=kwargs['attacker_id']).exists():
         attacker = Mission_Object.objects.get(object_id=kwargs['attacker_id'])
-        attacker = Player_Craft.objects.get(mission_obj=attacker)
+        if Player_Craft.objects.filter(mission_object=attacker).exists():
+            attacker = Player_Craft.objects.get(mission_object=attacker)
 
-        sortie = Sortie.objects.get(player_craft=attacker)
-        sortie.hits = sortie.hits + 1
-        sortie.save()
+            sortie = Sortie.objects.get(player_craft=attacker)
+            sortie.hits = sortie.hits + 1
+            sortie.save()
 
-        kwargs['sortie'] = sortie
-        kwargs['sortie_status'] = 'damaged'
-        kwargs['player_craft'] = attacker
+            kwargs['sortie'] = sortie
+            kwargs['sortie_status'] = 'damaged'
+            kwargs['player_craft'] = attacker
 
-        add_mission_event(**kwargs)
+            add_mission_event(**kwargs)
 
     # looking for target's player craft
     if (kwargs['target_id'] is not None) and \
-            Mission_Object.objects.filter(object_id=kwargs['target_id']).exists:
+            Mission_Object.objects.filter(object_id=kwargs['target_id']).exists():
         target = Mission_Object.objects.get(object_id=kwargs['target_id'])
-        target = Player_Craft.objects.get(mission_object=target)
+        if Player_Craft.objects.filter(mission_object=target).exists():
+            target = Player_Craft.objects.get(mission_object=target)
 
-        sortie = Sortie.objects.get(player_craft=target)
-        sortie.damage = sortie.damage + kwargs['damage']
-        sortie.save()
+            sortie = Sortie.objects.get(player_craft=target)
+            if 'damage' in kwargs:
+                sortie.damage = sortie.damage + kwargs['damage']
+                sortie.save()
+                kwargs['sortie_status'] = 'was damaged'
+            else:
+                kwargs['sortie_status'] = 'hit'
 
-        kwargs['sortie'] = sortie
-        kwargs['sortie_status'] = 'was damaged'
-        kwargs['player_craft'] = target
+            kwargs['player_craft'] = target
+            kwargs['sortie'] = sortie
 
-        add_mission_event(**kwargs)
+            add_mission_event(**kwargs)
     pass
 
 
