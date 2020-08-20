@@ -388,8 +388,24 @@ def event_damage(**kwargs):
     pass
 
 
-def event_kill():
-    pass
+def event_kill(**kwargs):
+    # data: {'tik': 37104, 'attacker_id': 8195, 'target_id': 64515,
+    #       'pos': {'x': 105927.6953, 'y': 52.026, 'z': 182844.0625}, 'atype_id': 3}
+
+    # looking for attacker's player craft
+    attacker = Mission_Object.objects.get(object_id=kwargs['attacker_id'])
+    #if Player_Craft.objects.filter(mission_object=attacker).exists():
+    attacker = Player_Craft.objects.get(mission_object=attacker)
+
+    sortie = Sortie.objects.get(player_craft=attacker)
+    sortie.kills = sortie.kills + 1
+    sortie.save()
+
+    kwargs['sortie'] = sortie
+    kwargs['sortie_status'] = 'kill'
+    kwargs['player_craft'] = attacker
+
+    add_mission_event(**kwargs)
 
 
 def event_sortie_end(**kwargs):
