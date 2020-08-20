@@ -406,8 +406,8 @@ class Player(models.Model):
 
 class Mission_Object(models.Model):
     mission = models.ForeignKey(Mission, on_delete=models.CASCADE)
-    object_id = models.IntegerField(unique=True)
-    #object_id = models.IntegerField()
+    # object_id = models.IntegerField(unique=True)
+    object_id = models.IntegerField()
     object_name = models.CharField(max_length=128)
     name = models.CharField(max_length=128)
     country_id = models.IntegerField()
@@ -476,6 +476,7 @@ class Sortie(models.Model):
     flight_time = models.IntegerField(default=0)
 
     is_alive = models.BooleanField(default=True)
+    is_bailed = models.BooleanField(default=False)
     #is_damaged = models.BooleanField(default=False)
     #hits = models.BooleanField(default=False)   # whether player did any damage
     damage = models.FloatField(default=0)

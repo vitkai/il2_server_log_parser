@@ -341,6 +341,7 @@ def event_mission_start(**kwargs):
 
 def event_hit(**kwargs):
     # data: {'tik': 36542, 'ammo': 'NPC_SHELL_RUS_25_HE', 'attacker_id': 834560, 'target_id': 9218, 'atype_id': 1}
+    kwargs['sortie_status'] = 'hit'
     event_damage(**kwargs)
 
 
@@ -361,7 +362,8 @@ def event_damage(**kwargs):
             sortie.save()
 
             kwargs['sortie'] = sortie
-            kwargs['sortie_status'] = 'damaged'
+            if 'sortie_status' not in kwargs:
+                kwargs['sortie_status'] = 'damaged'
             kwargs['player_craft'] = attacker
 
             add_mission_event(**kwargs)
@@ -369,17 +371,18 @@ def event_damage(**kwargs):
     # looking for target's player craft
     if (kwargs['target_id'] is not None) and \
             Mission_Object.objects.filter(object_id=kwargs['target_id']).exists():
-        target = Mission_Object.objects.get(object_id=kwargs['target_id'])
+        target = Mission_Object.objects.filter(object_id=kwargs['target_id']).first()
         if Player_Craft.objects.filter(mission_object=target).exists():
             target = Player_Craft.objects.get(mission_object=target)
 
             sortie = Sortie.objects.get(player_craft=target)
-            if 'damage' in kwargs:
-                sortie.damage = sortie.damage + kwargs['damage']
-                sortie.save()
-                kwargs['sortie_status'] = 'was damaged'
-            else:
-                kwargs['sortie_status'] = 'hit'
+            if 'sortie_status' not in kwargs:
+                if 'damage' in kwargs:
+                    sortie.damage = sortie.damage + kwargs['damage']
+                    sortie.save()
+                    kwargs['sortie_status'] = 'was damaged'
+                else:
+                    kwargs['sortie_status'] = 'hit'
 
             kwargs['player_craft'] = target
             kwargs['sortie'] = sortie
@@ -393,7 +396,7 @@ def event_kill(**kwargs):
     #       'pos': {'x': 105927.6953, 'y': 52.026, 'z': 182844.0625}, 'atype_id': 3}
 
     # looking for attacker's player craft
-    attacker = Mission_Object.objects.get(object_id=kwargs['attacker_id'])
+    """attacker = Mission_Object.objects.get(object_id=kwargs['attacker_id'])
     #if Player_Craft.objects.filter(mission_object=attacker).exists():
     attacker = Player_Craft.objects.get(mission_object=attacker)
 
@@ -405,7 +408,10 @@ def event_kill(**kwargs):
     kwargs['sortie_status'] = 'kill'
     kwargs['player_craft'] = attacker
 
-    add_mission_event(**kwargs)
+    add_mission_event(**kwargs)"""
+
+    kwargs['sortie_status'] = 'kill'
+    event_damage(**kwargs)
 
 
 def event_sortie_end(**kwargs):
@@ -637,8 +643,24 @@ def event_pos_changed():
     pass
 
 
-def event_bot_eject_leave():
-    pass
+def event_bot_eject_leave(**kwargs):
+    # data: {'tik': 46324, 'bot_id': 10242, 'parent_id': 9218, 'pos': {'x': 104485.0, 'y': 206.2197, 'z': 181687.125},
+    #           'atype_id': 18}
+    pilot = Mission_Object.objects.get(object_id=kwargs['bot_id'])
+    if pilot.parent_id is not None:
+        pilot = Mission_Object.objects.get(object_id=pilot.parent_id)
+
+    pilot = Player_Craft.objects.get(mission_object=pilot)
+
+    sortie = Sortie.objects.get(player_craft=pilot)
+    sortie.is_bailed = True
+    sortie.save()
+
+    kwargs['sortie'] = sortie
+    kwargs['sortie_status'] = 'bailed'
+    kwargs['player_craft'] = pilot
+
+    add_mission_event(**kwargs)
 
 
 def event_round_end():
