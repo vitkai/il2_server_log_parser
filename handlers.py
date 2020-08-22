@@ -372,6 +372,8 @@ def event_damage(**kwargs):
     if (kwargs['target_id'] is not None) and \
             Mission_Object.objects.filter(object_id=kwargs['target_id']).exists():
         target = Mission_Object.objects.filter(object_id=kwargs['target_id']).first()
+
+        # if Player Craft exists for given mission object, we need to update Sortie
         if Player_Craft.objects.filter(mission_object=target).exists():
             target = Player_Craft.objects.get(mission_object=target)
 
@@ -383,11 +385,27 @@ def event_damage(**kwargs):
                     kwargs['sortie_status'] = 'was damaged'
                 else:
                     kwargs['sortie_status'] = 'hit'
+            elif kwargs['sortie_status'] == 'kill':
+                sortie.is_destroyed = True
+                sortie.save()
 
             kwargs['player_craft'] = target
             kwargs['sortie'] = sortie
 
             add_mission_event(**kwargs)
+        # if object has parent and its Player Craft exists for given mission object,
+        #   we just add mission event record for that sortie
+        elif Mission_Object.objects.filter(object_id=target.parent_id).exists():
+            target = Mission_Object.objects.get(object_id=target.parent_id)
+            if Player_Craft.objects.filter(mission_object=target).exists():
+                target = Player_Craft.objects.get(mission_object=target)
+
+                sortie = Sortie.objects.get(player_craft=target)
+                kwargs['player_craft'] = target
+                kwargs['sortie'] = sortie
+
+                add_mission_event(**kwargs)
+    # TODO refactor logic above with target (Mission Object), its parent and Player craft
     pass
 
 
