@@ -358,12 +358,16 @@ def event_damage(**kwargs):
             attacker = Player_Craft.objects.get(mission_object=attacker)
 
             sortie = Sortie.objects.get(player_craft=attacker)
-            sortie.hits = sortie.hits + 1
-            sortie.save()
-
-            kwargs['sortie'] = sortie
             if 'sortie_status' not in kwargs:
                 kwargs['sortie_status'] = 'damaged'
+            elif kwargs['sortie_status'] == 'kill':
+                sortie.kills = sortie.kills + 1
+                sortie.save()
+            elif kwargs['sortie_status'] == 'hit':
+                sortie.hits = sortie.hits + 1
+                sortie.save()
+
+            kwargs['sortie'] = sortie
             kwargs['player_craft'] = attacker
 
             add_mission_event(**kwargs)
@@ -460,7 +464,18 @@ def event_takeoff(**kwargs):
     sortie_upd(**kwargs)
 
 
-def event_landing():
+def event_landing(**kwargs):
+    # data: {'tik': 46530, 'aircraft_id': 9218, 'pos': {'x': 104675.8281, 'y': 77.5108, 'z': 181554.7188}, 'atype_id': 6}
+    global mission
+
+    player_craft = Mission_Object.objects.get(object_id=kwargs['aircraft_id'], mission_id=mission)
+    player_craft = Player_Craft.objects.get(mission_object=player_craft)
+
+    kwargs['player_craft'] = player_craft
+    kwargs['sortie_status'] = 'landing'
+
+    sortie_upd(**kwargs)
+
     pass
 
 
@@ -540,8 +555,9 @@ def sortie_upd(**kwargs):
     elif kwargs['sortie_status'] == 'takeoff':
         sortie.date_takeoff = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
         sortie_upd = True
-    elif kwargs['sortie_status'] == 'land':
+    elif kwargs['sortie_status'] == 'landing':
         date_land = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
+        sortie.date_land = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
         sortie_upd = True
 
     if sortie_upd:
