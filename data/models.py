@@ -478,9 +478,8 @@ class Sortie(models.Model):
     is_alive = models.BooleanField(default=True)
     is_bailed = models.BooleanField(default=False)
     is_destroyed = models.BooleanField(default=False)
-    #is_damaged = models.BooleanField(default=False)
-    #hits = models.BooleanField(default=False)   # whether player did any damage
-    damage = models.FloatField(default=0)
+    plane_damage = models.FloatField(default=0)
+    pilot_damage = models.FloatField(default=0)
     hits = models.IntegerField(default=0)
     kills = models.IntegerField(default=0)
 

@@ -374,18 +374,21 @@ def event_damage(**kwargs):
 
     # looking for target's player craft
     parent_object = False
+    pilot_object = False
     add_event = False
     if (kwargs['target_id'] is not None) and \
             Mission_Object.objects.filter(object_id=kwargs['target_id']).exists():
-        target = Mission_Object.objects.filter(object_id=kwargs['target_id']).first()
+        real_target = Mission_Object.objects.filter(object_id=kwargs['target_id']).first()
 
         # if Player Craft exists for given mission object, we need to update Sortie
-        if Player_Craft.objects.filter(mission_object=target).exists():
-            target = Player_Craft.objects.get(mission_object=target)
+        if Player_Craft.objects.filter(mission_object=real_target).exists():
+            target = Player_Craft.objects.get(mission_object=real_target)
             parent_object = True
             add_event = True
-        elif Mission_Object.objects.filter(object_id=target.parent_id).exists():
-            target = Mission_Object.objects.get(object_id=target.parent_id)
+        elif Mission_Object.objects.filter(object_id=real_target.parent_id).exists():
+            target = Mission_Object.objects.get(object_id=real_target.parent_id)
+            if real_target.object_name.startswith('BotPilot'):
+                pilot_object = True
             if Player_Craft.objects.filter(mission_object=target).exists():
                 target = Player_Craft.objects.get(mission_object=target)
                 add_event = True
@@ -397,13 +400,22 @@ def event_damage(**kwargs):
                     kwargs['sortie_status'] = 'was damaged'
                     # update sortie for parent object (player craft)
                     if parent_object:
-                        sortie.damage = sortie.damage + kwargs['damage']
+                        sortie.plane_damage = sortie.plane_damage + kwargs['damage']
+                        sortie.save()
+                    # update sortie if player (pilot)
+                    elif pilot_object:
+                        sortie.pilot_damage = sortie.pilot_damage + kwargs['damage']
                         sortie.save()
                 else:
                     kwargs['sortie_status'] = 'hit'
-            elif kwargs['sortie_status'] == 'kill' and parent_object:
-                sortie.is_destroyed = True
-                sortie.save()
+            elif kwargs['sortie_status'] == 'kill':
+                if parent_object:
+                    sortie.is_destroyed = True
+                    sortie.save()
+                # update sortie if player (pilot)
+                elif pilot_object:
+                    sortie.is_alive = False
+                    sortie.save()
 
             kwargs['player_craft'] = target
             kwargs['sortie'] = sortie
@@ -441,8 +453,12 @@ def event_sortie_end(**kwargs):
     # logger.debug('Event handler for [event_sortie_end] is empty')
 
     kwargs['sortie_status'] = 'end'
-    player_craft = Mission_Object.objects.get(object_id=kwargs['aircraft_id'], mission_id=mission)
-    player_craft = Player_Craft.objects.get(mission_object=player_craft)
+    if kwargs['aircraft_id'] == 0:
+        miss_obj = Mission_Object.objects.get(object_id=kwargs['bot_id'], mission_id=mission)
+        miss_obj = Mission_Object.objects.get(object_id=miss_obj.parent_id, mission_id=mission)
+    else:
+        miss_obj = Mission_Object.objects.get(object_id=kwargs['aircraft_id'], mission_id=mission)
+    player_craft = Player_Craft.objects.get(mission_object=miss_obj)
     kwargs['player_craft'] = player_craft
 
     sortie_upd(**kwargs)
@@ -546,7 +562,8 @@ def sortie_upd(**kwargs):
 
     if kwargs['sortie_status'] == 'init':
         sortie.date_start = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
-        sortie.damage = 0
+        sortie.plane_damage = 0
+        sortie.pilot_damage = 0
         sortie_upd = True
     elif kwargs['sortie_status'] == 'end':
         date_end = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
@@ -574,7 +591,8 @@ def event_player_plane(**kwargs):
     #player = player.id
     #print(f"Player={player}")
 
-    mission_obj = Mission_Object.objects.get(object_id=kwargs['aircraft_id'])
+    # mission_obj = Mission_Object.objects.get(object_id=kwargs['aircraft_id'])
+    mission_obj = Mission_Object.objects.filter(object_id=kwargs['aircraft_id']).last()
     #mission_obj = mission_obj.object_id
     #print(f"Object=object_id[{mission_obj.object_id}], object_name[{mission_obj.object_name}]")
     #print(f"Object={mission_obj}")
