@@ -428,7 +428,8 @@ class Airfield(models.Model):
 
 
 class Player_Craft(models.Model):
-    mission_object = models.ForeignKey(Mission_Object, on_delete=models.CASCADE)
+    mission_object_plane = models.ForeignKey(Mission_Object, on_delete=models.CASCADE)
+    # mission_object_bot = models.ForeignKey(Mission_Object, on_delete=models.CASCADE)
     mission = models.ForeignKey(Mission, on_delete=models.CASCADE)
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     # mission_object = models.IntegerField(blank=True, null=True)
