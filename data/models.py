@@ -568,4 +568,18 @@ class Mission_Event(models.Model):
     # data = models.JSONField(default=dict)
 
 
+class Mission_Objective(models.Model):
+    #{'tik': 1105, 'object_id': 64137, 'pos': {'x': 118595.8047, 'y': 67.232, 'z': 227313.5625}, 'coal_id': 1,
+    #       'task_type_id': 14, 'success': True, 'icon_type_id': None, 'atype_id': 8}
+    mission = models.ForeignKey(Mission, on_delete=models.CASCADE)
+    coal = models.IntegerField()
+    object = models.IntegerField()
+    task_type = models.IntegerField()
+    tik = models.IntegerField(blank=True, null=True, db_index=True)
+    icon_type_id = models.IntegerField(blank=True, null=True)
 
+    pos_x = models.FloatField(blank=True, null=True)
+    pos_y = models.FloatField(blank=True, null=True)
+    pos_z = models.FloatField(blank=True, null=True)
+
+    success = models.BooleanField(default=False)

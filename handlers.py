@@ -20,8 +20,8 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
-from data.models import Airfield, Airfield_Mission, Mission, Mission_Event, Mission_Object, Player, Player_Craft, \
-    Sortie
+from data.models import Airfield, Airfield_Mission, Mission, Mission_Event, Mission_Object, Mission_Objective, Player, \
+    Player_Craft, Sortie
 
 logger = logging.getLogger(__name__)
 global mission, tik_last
@@ -490,13 +490,22 @@ def event_mission_end():
     pass
 
 
-def event_mission_result():
-    pass
+def event_mission_result(**kwargs):
+    # data: {'tik': 1105, 'object_id': 64137, 'pos': {'x': 118595.8047, 'y': 67.232, 'z': 227313.5625}, 'coal_id': 1,
+    #       'task_type_id': 14, 'success': True, 'icon_type_id': None, 'atype_id': 8}
+    global mission
+
+    if not Mission_Objective.objects.filter(mission=mission, object=kwargs['object_id']).exists():
+        # Add objective
+        mis_objective = Mission_Objective(mission=mission, object=kwargs['object_id'], tik=kwargs['tik'],
+                                          coal=kwargs['coal_id'], task_type=kwargs['task_type_id'],
+                                          success=kwargs['success'], icon_type_id=kwargs['icon_type_id'],
+                                          pos_x=kwargs['pos']['x'], pos_y=kwargs['pos']['y'], pos_z=kwargs['pos']['z'])
+        mis_objective.save()
 
 
 def event_airfield(**kwargs):
     # airfield initialization event
-    #logger.debug('Event handler for [airfield initialization] is empty')
     """
     mission = models.ForeignKey(Mission, on_delete=models.CASCADE)
     airfield_id = models.IntegerField(unique=True)
