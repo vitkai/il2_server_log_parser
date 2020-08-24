@@ -20,7 +20,8 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
-from data.models import Airfield, Mission, Mission_Event, Mission_Object, Player, Player_Craft, Sortie
+from data.models import Airfield, Airfield_Mission, Mission, Mission_Event, Mission_Object, Player, Player_Craft, \
+    Sortie
 
 logger = logging.getLogger(__name__)
 global mission, tik_last
@@ -435,15 +436,17 @@ def event_kill(**kwargs):
 def event_sortie_end(**kwargs):
     # data: {'tik': 25486, 'aircraft_id': 10244, 'bot_id': 11268, 'cartridges': 5175, 'shells': 0, 'bombs': 6,
     #   'rockets': 0, 'pos': {'x': 119494.9531, 'y': 55.5708, 'z': 156456.7188}, 'atype_id': 4}
-    # logger.debug('Event handler for [event_sortie_end] is empty')
 
     kwargs['sortie_status'] = 'end'
+    """
     if kwargs['aircraft_id'] == 0:
         miss_obj = Mission_Object.objects.get(object_id=kwargs['bot_id'], mission_id=mission)
         miss_obj = Mission_Object.objects.get(object_id=miss_obj.parent_id, mission_id=mission)
     else:
         miss_obj = Mission_Object.objects.get(object_id=kwargs['aircraft_id'], mission_id=mission)
     player_craft = Player_Craft.objects.get(mission_object_plane=miss_obj)
+    """
+    player_craft = Player_Craft.objects.get(bot_id=kwargs['bot_id'])
     kwargs['player_craft'] = player_craft
 
     sortie_upd(**kwargs)
@@ -461,6 +464,9 @@ def event_takeoff(**kwargs):
 
     kwargs['player_craft'] = player_craft
     kwargs['sortie_status'] = 'takeoff'
+    # kwargs['player_id'] = player_craft.player
+
+    player_upd(**kwargs)
 
     sortie_upd(**kwargs)
 
@@ -497,30 +503,51 @@ def event_airfield(**kwargs):
     country_id = models.IntegerField()
     tik = models.IntegerField()"""
 
-    if Airfield.objects.filter(mission=mission, airfield_id=kwargs['airfield_id']).exists():
+    if Airfield.objects.filter(airfield_id=kwargs['airfield_id']).exists():
         logger.info(f"Airfield [{kwargs['airfield_id']}] - exists in the DB")
-        # return
+        airfield = Airfield.objects.get(airfield_id=kwargs['airfield_id'])
     else:
         # Add airfield
-        airfield = Airfield(mission=mission, airfield_id=kwargs['airfield_id'], country_id = kwargs['country_id'],
-                          tik = kwargs['tik'], pos_x=kwargs['pos']['x'], pos_y=kwargs['pos']['y'],
-                          pos_z=kwargs['pos']['z'])
+        airfield = Airfield(airfield_id=kwargs['airfield_id'], pos_x=kwargs['pos']['x'], pos_y=kwargs['pos']['y'],
+                            pos_z=kwargs['pos']['z'])
         airfield.save()
+
+    # check whether airfiled exists in the current mission
+    if not Airfield_Mission.objects.filter(mission=mission, airfield=airfield).exists():
+        airfield_mission = Airfield_Mission(mission=mission, airfield=airfield, country_id=kwargs['country_id'],
+                            tik=kwargs['tik'])
+        airfield_mission.save()
 
 
 def player_upd(**kwargs):
-    if Player.objects.filter(profile_id=kwargs['profile_id'], account_id=kwargs['account_id']).exists():
-        logger.info(f"Player [{kwargs['profile_id']}] - exists in the DB")
-        player = Player.objects.get(profile_id=kwargs['profile_id'], account_id=kwargs['account_id'])
-    else:
-        # Add Player
-        name = ''
-        if 'name' in kwargs:
-            name = kwargs['name']
-        player = Player(profile_id=kwargs['profile_id'], account_id=kwargs['account_id'], name=name)
-        player.save()
+    if kwargs['atype_id'] == 10:    # plane init
+        if Player.objects.filter(profile_id=kwargs['profile_id'], account_id=kwargs['account_id']).exists():
+            logger.info(f"Player [{kwargs['profile_id']}] - exists in the DB")
+            player = Player.objects.get(profile_id=kwargs['profile_id'], account_id=kwargs['account_id'])
+        else:
+            # Add Player
+            name = ''
+            if 'name' in kwargs:
+                name = kwargs['name']
+            player = Player(profile_id=kwargs['profile_id'], account_id=kwargs['account_id'], name=name)
+            player.save()
 
-    return player
+        return player
+    elif kwargs['atype_id'] == 16:  # bot deinit
+        """
+        player_id = Player_Craft.objects.get(bot_id=kwargs['bot_id'])
+        player = Player.objects.get(pk=player_id)
+
+        player.sorties_total = player.sorties_total + 1
+        player.save
+        """
+        pass
+    elif kwargs['atype_id'] == 5:  # takeoff
+        # player = Player.objects.get(pk=kwargs['player_craft'].player)
+        player = kwargs['player_craft'].player
+        # print(f"Player info: {player.account_id} | {player.sorties_total}")
+        player.sorties_total = player.sorties_total + 1
+        player.save()
 
 
 def sortie_upd(**kwargs):
@@ -662,14 +689,19 @@ def event_bot_deinitialization(**kwargs):
     # data: {'tik': 47099, 'bot_id': 10242, 'pos': {'x': 104586.3828, 'y': 74.2299, 'z': 181501.5313}, 'atype_id': 16}
     # data: {'tik': 25490, 'bot_id': 11268, 'pos': {'x': 119496.0469, 'y': 55.8246, 'z': 156457.3438}, 'atype_id': 16}
     global mission
-
+    """
     mission_obj = Mission_Object.objects.get(object_id=kwargs['bot_id'])
     # print(f"mission_obj.parent_id: {mission_obj.parent_id}")
     if mission_obj.parent_id is not None:
         mission_obj = Mission_Object.objects.get(object_id=mission_obj.parent_id)
 
     player_craft = Player_Craft.objects.get(mission_object_plane=mission_obj)
+    """
+    player_craft = Player_Craft.objects.get(bot_id=kwargs['bot_id'])
     kwargs['player_craft'] = player_craft
+
+    player_upd(**kwargs)    # update player stats
+
     sortie = Sortie.objects.get(mission=mission, player_craft=player_craft)
     kwargs['sortie'] = sortie
     kwargs['sortie_status'] = 'bot_deinit'

@@ -418,13 +418,19 @@ class Mission_Object(models.Model):
 
 
 class Airfield(models.Model):
-    mission = models.ForeignKey(Mission, on_delete=models.CASCADE)
+    # mission = models.ForeignKey(Mission, on_delete=models.CASCADE)
     airfield_id = models.IntegerField(unique=True)
-    country_id = models.IntegerField()
-    tik = models.IntegerField()
+    # country_id = models.IntegerField()
     pos_x = models.FloatField(blank=True, null=True)
     pos_y = models.FloatField(blank=True, null=True)
     pos_z = models.FloatField(blank=True, null=True)
+
+
+class Airfield_Mission(models.Model):
+    mission = models.ForeignKey(Mission, on_delete=models.CASCADE)
+    airfield = models.ForeignKey(Airfield, on_delete=models.CASCADE)
+    country_id = models.IntegerField()
+    tik = models.IntegerField()
 
 
 class Player_Craft(models.Model):

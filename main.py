@@ -127,6 +127,7 @@ def get_files_lst(log_path, log_ptrn):
 
 # main starts here
 def main():
+    rec: Mission_Log
     #global full_path#, log_dir_path
 
     #full_path, filename = os.path.split(os.path.realpath(__file__))
@@ -149,12 +150,16 @@ def main():
 
 
     for rec in files:
-        check_mission(rec.name)
-        file_path = 'missionReport(' + str(rec.name) + ')[' + str(rec.miss_log_id) + '].txt'
+        if not rec.is_processed:
+            check_mission(rec.name)
+            file_path = 'missionReport(' + str(rec.name) + ')[' + str(rec.miss_log_id) + '].txt'
 
-        work_fl = os.path.join(log_dir_path, file_path)
-        logger.debug(f'processing file: [{work_fl}]')
-        parse_data(work_fl)
+            work_fl = os.path.join(log_dir_path, file_path)
+            logger.debug(f'processing file: [{work_fl}]')
+            parse_data(work_fl)
+
+            rec.is_processed = True
+            rec.save()
 
     print("\nThat's all folks")
 
