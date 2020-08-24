@@ -363,10 +363,11 @@ def event_damage(**kwargs):
                 kwargs['sortie_status'] = 'damaged'
             elif kwargs['sortie_status'] == 'kill':
                 sortie.kills = sortie.kills + 1
-                sortie.save()
             elif kwargs['sortie_status'] == 'hit':
                 sortie.hits = sortie.hits + 1
-                sortie.save()
+
+            sortie.is_in_flight = True
+            sortie.save()
 
             kwargs['sortie'] = sortie
             kwargs['player_craft'] = attacker
@@ -402,10 +403,12 @@ def event_damage(**kwargs):
                     # update sortie for parent object (player craft)
                     if parent_object:
                         sortie.plane_damage = sortie.plane_damage + kwargs['damage']
+                        sortie.is_in_flight = True
                         sortie.save()
                     # update sortie if player (pilot)
                     elif pilot_object:
                         sortie.pilot_damage = sortie.pilot_damage + kwargs['damage']
+                        sortie.is_in_flight = True
                         sortie.save()
                 else:
                     kwargs['sortie_status'] = 'hit'
@@ -467,7 +470,6 @@ def event_takeoff(**kwargs):
     # kwargs['player_id'] = player_craft.player
 
     player_upd(**kwargs)
-
     sortie_upd(**kwargs)
 
 
@@ -592,10 +594,11 @@ def sortie_upd(**kwargs):
         sortie_upd = True
     elif kwargs['sortie_status'] == 'takeoff':
         sortie.date_takeoff = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
+        sortie.is_in_flight = True
         sortie_upd = True
     elif kwargs['sortie_status'] == 'landing':
-        date_land = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
         sortie.date_land = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
+        sortie.is_in_flight = False
         sortie_upd = True
 
     if sortie_upd:
@@ -751,7 +754,17 @@ def event_player_connected(**kwargs):
     pass
 
 
+# def event_player_disconnected(**kwargs):
 def event_player_disconnected():
+    # data: {'tik': 42561, 'account_id': '3ba2a5c1-6ac6-4f96-8bfb-963efe9906dd',
+    #   'profile_id': '9bf9b219-95eb-4ea6-9d61-cfb0a3cc011f', 'atype_id': 21}
+    """
+    to check/update Sortie parameters:
+    is_disco_after_damage = models.BooleanField(default=False)
+    is_disco_after_damage = models.BooleanField(default=False)
+    is_disco_in_flight = models.BooleanField(default=False)
+    :return:
+    """
     pass
 
 
