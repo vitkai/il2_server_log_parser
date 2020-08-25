@@ -486,7 +486,6 @@ class Sortie(models.Model):
     is_bailed = models.BooleanField(default=False)
     is_destroyed = models.BooleanField(default=False)
     is_disco_after_damage = models.BooleanField(default=False)
-    is_disco_after_damage = models.BooleanField(default=False)
     is_disco_in_flight = models.BooleanField(default=False)
     is_in_flight = models.BooleanField(default=False)
     plane_damage = models.FloatField(default=0)

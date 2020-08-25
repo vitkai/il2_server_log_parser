@@ -351,12 +351,14 @@ def event_damage(**kwargs):
     #               'pos': {'x': 119480.9688, 'y': 56.9919, 'z': 156564.7344}, 'atype_id': 2}
     # logger.debug('Event handler for [event_damage] is empty')
 
+    global mission
+
     # looking for attacker's player craft
     if (kwargs['attacker_id'] is not None) and \
             Mission_Object.objects.filter(object_id=kwargs['attacker_id']).exists():
-        attacker = Mission_Object.objects.get(object_id=kwargs['attacker_id'])
+        attacker = Mission_Object.objects.filter(object_id=kwargs['attacker_id'], mission=mission).last()
         if Player_Craft.objects.filter(mission_object_plane=attacker).exists():
-            attacker = Player_Craft.objects.get(mission_object_plane=attacker)
+            attacker = Player_Craft.objects.filter(mission_object_plane=attacker, mission=mission).last()
 
             sortie = Sortie.objects.get(player_craft=attacker)
             if 'sortie_status' not in kwargs:
@@ -379,24 +381,24 @@ def event_damage(**kwargs):
     pilot_object = False
     add_event = False
     if (kwargs['target_id'] is not None) and \
-            Mission_Object.objects.filter(object_id=kwargs['target_id']).exists():
-        real_target = Mission_Object.objects.filter(object_id=kwargs['target_id']).first()
+            Mission_Object.objects.filter(object_id=kwargs['target_id'], mission=mission).exists():
+        real_target = Mission_Object.objects.filter(object_id=kwargs['target_id'], mission=mission).last()
 
         # if Player Craft exists for given mission object, we need to update Sortie
-        if Player_Craft.objects.filter(mission_object_plane=real_target).exists():
-            target = Player_Craft.objects.get(mission_object_plane=real_target)
+        if Player_Craft.objects.filter(mission_object_plane=real_target, mission=mission).exists():
+            target = Player_Craft.objects.get(mission_object_plane=real_target, mission=mission)
             parent_object = True
             add_event = True
-        elif Mission_Object.objects.filter(object_id=real_target.parent_id).exists():
-            target = Mission_Object.objects.get(object_id=real_target.parent_id)
+        elif Mission_Object.objects.filter(object_id=real_target.parent_id, mission=mission).exists():
+            target = Mission_Object.objects.get(object_id=real_target.parent_id, mission=mission)
             if real_target.object_name.startswith('BotPilot'):
                 pilot_object = True
-            if Player_Craft.objects.filter(mission_object_plane=target).exists():
-                target = Player_Craft.objects.get(mission_object_plane=target)
+            if Player_Craft.objects.filter(mission_object_plane=target, mission=mission).exists():
+                target = Player_Craft.objects.get(mission_object_plane=target, mission=mission)
                 add_event = True
 
         if add_event:
-            sortie = Sortie.objects.get(player_craft=target)
+            sortie = Sortie.objects.get(player_craft=target, mission=mission)
             if 'sortie_status' not in kwargs:
                 if 'damage' in kwargs:
                     kwargs['sortie_status'] = 'was damaged'
@@ -440,6 +442,8 @@ def event_sortie_end(**kwargs):
     # data: {'tik': 25486, 'aircraft_id': 10244, 'bot_id': 11268, 'cartridges': 5175, 'shells': 0, 'bombs': 6,
     #   'rockets': 0, 'pos': {'x': 119494.9531, 'y': 55.5708, 'z': 156456.7188}, 'atype_id': 4}
 
+    global mission
+
     kwargs['sortie_status'] = 'end'
     """
     if kwargs['aircraft_id'] == 0:
@@ -449,7 +453,7 @@ def event_sortie_end(**kwargs):
         miss_obj = Mission_Object.objects.get(object_id=kwargs['aircraft_id'], mission_id=mission)
     player_craft = Player_Craft.objects.get(mission_object_plane=miss_obj)
     """
-    player_craft = Player_Craft.objects.get(bot_id=kwargs['bot_id'])
+    player_craft = Player_Craft.objects.get(bot_id=kwargs['bot_id'], mission=mission)
     kwargs['player_craft'] = player_craft
 
     sortie_upd(**kwargs)
@@ -709,7 +713,7 @@ def event_bot_deinitialization(**kwargs):
 
     player_craft = Player_Craft.objects.get(mission_object_plane=mission_obj)
     """
-    player_craft = Player_Craft.objects.get(bot_id=kwargs['bot_id'])
+    player_craft = Player_Craft.objects.get(mission=mission, bot_id=kwargs['bot_id'])
     kwargs['player_craft'] = player_craft
 
     player_upd(**kwargs)    # update player stats
@@ -754,17 +758,37 @@ def event_player_connected(**kwargs):
     pass
 
 
-# def event_player_disconnected(**kwargs):
-def event_player_disconnected():
+def event_player_disconnected(**kwargs):
+    global mission
     # data: {'tik': 42561, 'account_id': '3ba2a5c1-6ac6-4f96-8bfb-963efe9906dd',
     #   'profile_id': '9bf9b219-95eb-4ea6-9d61-cfb0a3cc011f', 'atype_id': 21}
+    # TODO see below
     """
-    to check/update Sortie parameters:
-    is_disco_after_damage = models.BooleanField(default=False)
-    is_disco_after_damage = models.BooleanField(default=False)
-    is_disco_in_flight = models.BooleanField(default=False)
+    to update Sortie parameters:
+        is_disco_after_damage = models.BooleanField(default=False)
+        is_disco_in_flight = models.BooleanField(default=False)
+    to update Player parameters:
+        score = models.BigIntegerField(default=0, db_index=True)
+        rating = models.BigIntegerField(default=0, db_index=True)
+        ratio = models.FloatField(default=1)
     :return:
     """
+    if Player.objects.filter(account_id=kwargs['account_id'], profile_id=kwargs['profile_id']).exists():
+        player = Player.objects.get(account_id=kwargs['account_id'], profile_id=kwargs['profile_id'])
+
+        if Sortie.objects.filter(player=player, mission=mission).exists():
+            sortie = Sortie.objects.filter(player=player, mission=mission).last()
+
+            if sortie.is_in_flight and sortie.is_alive:
+                sortie.is_disco_in_flight = True
+            if sortie.plane_damage > 0 or sortie.pilot_damage > 0:
+                last_event = Mission_Event.objects.filter(sortie_status='was damaged', mission=mission,
+                                                          sortie=sortie).last()
+                time_delta = abs(kwargs['tik'] - last_event.tik) // 50
+                if time_delta < 30:
+                    sortie.is_disco_after_damage = True
+
+            sortie.save()
     pass
 
 
