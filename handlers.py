@@ -386,15 +386,15 @@ def event_damage(**kwargs):
 
         # if Player Craft exists for given mission object, we need to update Sortie
         if Player_Craft.objects.filter(mission_object_plane=real_target, mission=mission).exists():
-            target = Player_Craft.objects.get(mission_object_plane=real_target, mission=mission)
+            target = Player_Craft.objects.filter(mission_object_plane=real_target, mission=mission).last()
             parent_object = True
             add_event = True
         elif Mission_Object.objects.filter(object_id=real_target.parent_id, mission=mission).exists():
-            target = Mission_Object.objects.get(object_id=real_target.parent_id, mission=mission)
+            target = Mission_Object.objects.filter(object_id=real_target.parent_id, mission=mission).last()
             if real_target.object_name.startswith('BotPilot'):
                 pilot_object = True
             if Player_Craft.objects.filter(mission_object_plane=target, mission=mission).exists():
-                target = Player_Craft.objects.get(mission_object_plane=target, mission=mission)
+                target = Player_Craft.objects.filter(mission_object_plane=target, mission=mission).last()
                 add_event = True
 
         if add_event:
@@ -404,7 +404,7 @@ def event_damage(**kwargs):
                     kwargs['sortie_status'] = 'was damaged'
                     # update sortie for parent object (player craft)
                     if parent_object:
-                        sortie.plane_damage = sortie.plane_damage + kwargs['damage']
+                        sortie.plane_damage = round(sortie.plane_damage + kwargs['damage'], 1)
                         sortie.is_in_flight = True
                         sortie.save()
                     # update sortie if player (pilot)
@@ -442,6 +442,8 @@ def event_sortie_end(**kwargs):
     # data: {'tik': 25486, 'aircraft_id': 10244, 'bot_id': 11268, 'cartridges': 5175, 'shells': 0, 'bombs': 6,
     #   'rockets': 0, 'pos': {'x': 119494.9531, 'y': 55.5708, 'z': 156456.7188}, 'atype_id': 4}
 
+    # data: {'tik': 357687, 'aircraft_id': 0, 'bot_id': 146433, 'cartridges': 0, 'shells': 0, 'bombs': 0, 'rockets': 0,
+    #   'pos': {'x': 0.0, 'y': 0.0, 'z': 0.0}, 'atype_id': 4}
     global mission
 
     kwargs['sortie_status'] = 'end'
@@ -453,7 +455,8 @@ def event_sortie_end(**kwargs):
         miss_obj = Mission_Object.objects.get(object_id=kwargs['aircraft_id'], mission_id=mission)
     player_craft = Player_Craft.objects.get(mission_object_plane=miss_obj)
     """
-    player_craft = Player_Craft.objects.get(bot_id=kwargs['bot_id'], mission=mission)
+    # miss_obj = Mission_Object.objects.filter(object_id=kwargs['aircraft_id'], mission_id=mission).last()
+    player_craft = Player_Craft.objects.filter(bot_id=kwargs['bot_id'], mission=mission).last()
     kwargs['player_craft'] = player_craft
 
     sortie_upd(**kwargs)
@@ -464,9 +467,9 @@ def event_takeoff(**kwargs):
 
     # data: {'tik': 18990, 'aircraft_id': 8195, 'pos': {'x': 119872.8906, 'y': 77.0816, 'z': 158145.7813}, 'atype_id': 5}
     # logger.debug('Event handler for [event_takeoff] is empty')
-    player_craft = Mission_Object.objects.get(object_id=kwargs['aircraft_id'], mission_id=mission)
+    player_craft = Mission_Object.objects.filter(object_id=kwargs['aircraft_id'], mission_id=mission).last()
     # print(f'Mission object: {player_craft}')
-    player_craft = Player_Craft.objects.get(mission_object_plane=player_craft)
+    player_craft = Player_Craft.objects.filter(mission_object_plane=player_craft).last()
     # print(f'Player Craft: {player_craft}')
 
     kwargs['player_craft'] = player_craft
@@ -481,8 +484,8 @@ def event_landing(**kwargs):
     # data: {'tik': 46530, 'aircraft_id': 9218, 'pos': {'x': 104675.8281, 'y': 77.5108, 'z': 181554.7188}, 'atype_id': 6}
     global mission
 
-    player_craft = Mission_Object.objects.get(object_id=kwargs['aircraft_id'], mission_id=mission)
-    player_craft = Player_Craft.objects.get(mission_object_plane=player_craft)
+    player_craft = Mission_Object.objects.filter(object_id=kwargs['aircraft_id'], mission_id=mission).last()
+    player_craft = Player_Craft.objects.filter(mission_object_plane=player_craft, mission=mission).last()
 
     kwargs['player_craft'] = player_craft
     kwargs['sortie_status'] = 'landing'
@@ -576,15 +579,16 @@ def sortie_upd(**kwargs):
 
     sortie_upd = False
 
-    # print(f"kwargs['player_craft'] = {kwargs['player_craft']}")
     player_craft = kwargs['player_craft']
+
 
     if Sortie.objects.filter(mission=mission, player_craft=player_craft).exists():
         #logger.debug(f"Sortie [{mission_obj}] - exists in the DB")
         sortie = Sortie.objects.get(mission=mission, player_craft=player_craft)
     else:
-        # Add player craft
-        sortie = Sortie.objects.create(mission=mission, player=kwargs['player'], player_craft=player_craft)
+        # Add Sortie
+        # if 'player' in kwargs:
+        sortie = Sortie.objects.create(mission=mission, player_craft=player_craft, player=kwargs['player'])
         sortie_upd = True
 
     if kwargs['sortie_status'] == 'init':
@@ -644,9 +648,9 @@ def event_player_plane(**kwargs):
     fuel = kwargs["fuel"]
     skin = kwargs["skin"]
 
-    if Player_Craft.objects.filter(player=player, mission_object_plane=mission_obj).exists():
+    if Player_Craft.objects.filter(player=player, mission_object_plane=mission_obj, bot_id=bot_id).exists():
         logger.debug(f"Player_Craft [{mission_obj}] - exists in the DB")
-        player_craft = Player_Craft.objects.get(player=player, mission_object_plane=mission_obj)
+        player_craft = Player_Craft.objects.get(player=player, mission_object_plane=mission_obj, bot_id=bot_id)
     else:
         # Add player craft
         player_craft = Player_Craft.objects.create(mission=mission, player=player, mission_object_plane=mission_obj,
@@ -713,7 +717,7 @@ def event_bot_deinitialization(**kwargs):
 
     player_craft = Player_Craft.objects.get(mission_object_plane=mission_obj)
     """
-    player_craft = Player_Craft.objects.get(mission=mission, bot_id=kwargs['bot_id'])
+    player_craft = Player_Craft.objects.filter(mission=mission, bot_id=kwargs['bot_id']).last()
     kwargs['player_craft'] = player_craft
 
     player_upd(**kwargs)    # update player stats
@@ -731,6 +735,11 @@ def event_pos_changed():
 def event_bot_eject_leave(**kwargs):
     # data: {'tik': 46324, 'bot_id': 10242, 'parent_id': 9218, 'pos': {'x': 104485.0, 'y': 206.2197, 'z': 181687.125},
     #           'atype_id': 18}
+
+    # data: {'tik': 676636, 'bot_id': 29724, 'parent_id': 24604,
+    #       'pos': {'x': 121430.4609, 'y': 1784.7279, 'z': 185596.9219}, 'atype_id': 18}
+
+    global mission
     """
     pilot = Mission_Object.objects.get(object_id=kwargs['bot_id'])
     if pilot.parent_id is not None:
@@ -738,16 +747,18 @@ def event_bot_eject_leave(**kwargs):
 
     pilot = Player_Craft.objects.get(mission_object_plane=pilot)
     """
-    pilots_plane = Player_Craft.objects.get(bot_id=kwargs['bot_id'])
-    sortie = Sortie.objects.get(player_craft=pilots_plane)
-    sortie.is_bailed = True
-    sortie.save()
+    # check if player representing bot object ejected | skip otherwise
+    if Player_Craft.objects.filter(bot_id=kwargs['bot_id'], mission=mission).exists():
+        pilots_plane = Player_Craft.objects.filter(bot_id=kwargs['bot_id'], mission=mission).last()
+        sortie = Sortie.objects.get(player_craft=pilots_plane)
+        sortie.is_bailed = True
+        sortie.save()
 
-    kwargs['sortie'] = sortie
-    kwargs['sortie_status'] = 'bailed'
-    kwargs['player_craft'] = pilots_plane
+        kwargs['sortie'] = sortie
+        kwargs['sortie_status'] = 'bailed'
+        kwargs['player_craft'] = pilots_plane
 
-    add_mission_event(**kwargs)
+        add_mission_event(**kwargs)
 
 
 def event_round_end():
