@@ -5,3 +5,4 @@ media/
 .vs
 *.log
 *.sqlite3
+log_samples_bck/
