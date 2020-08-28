@@ -356,17 +356,30 @@ def event_damage(**kwargs):
     # looking for attacker's player craft
     if (kwargs['attacker_id'] is not None) and \
             Mission_Object.objects.filter(object_id=kwargs['attacker_id']).exists():
-        attacker = Mission_Object.objects.filter(object_id=kwargs['attacker_id'], mission=mission).last()
-        if Player_Craft.objects.filter(mission_object_plane=attacker).exists():
-            attacker = Player_Craft.objects.filter(mission_object_plane=attacker, mission=mission).last()
+        attacker_obj = Mission_Object.objects.filter(object_id=kwargs['attacker_id'], mission=mission).last()
+        if Player_Craft.objects.filter(mission_object_plane=attacker_obj).exists():
+            attacker = Player_Craft.objects.filter(mission_object_plane=attacker_obj, mission=mission).last()
+            target = Mission_Object.objects.filter(object_id=kwargs['target_id'], mission=mission).last()
+
+            friendly_fire = False
+
+            if target is not None:
+                if attacker_obj.country_id == target.country_id:
+                    friendly_fire = True
 
             sortie = Sortie.objects.filter(player_craft=attacker).last()
             if 'sortie_status' not in kwargs:
                 kwargs['sortie_status'] = 'damaged'
             elif kwargs['sortie_status'] == 'kill':
-                sortie.kills = sortie.kills + 1
+                if friendly_fire:
+                    sortie.kills_friend = sortie.kills_friend + 1
+                else:
+                    sortie.kills = sortie.kills + 1
             elif kwargs['sortie_status'] == 'hit':
-                sortie.hits = sortie.hits + 1
+                if friendly_fire:
+                    sortie.hits_friend = sortie.hits_friend + 1
+                else:
+                    sortie.hits = sortie.hits + 1
 
             sortie.is_in_flight = True
             sortie.save()
