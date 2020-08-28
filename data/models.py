@@ -460,7 +460,8 @@ class Player_Craft(models.Model):
 
 
 class Sortie(models.Model):
-    nickname = models.CharField(max_length=128)
+    # nickname = models.CharField(max_length=128)
+    tik = models.IntegerField(blank=True, null=True)
 
     player = models.ForeignKey(Player, related_name='sorties_list', on_delete=models.CASCADE)
     mission = models.ForeignKey(Mission, related_name='sorties_list', on_delete=models.CASCADE)

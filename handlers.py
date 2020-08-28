@@ -360,7 +360,7 @@ def event_damage(**kwargs):
         if Player_Craft.objects.filter(mission_object_plane=attacker).exists():
             attacker = Player_Craft.objects.filter(mission_object_plane=attacker, mission=mission).last()
 
-            sortie = Sortie.objects.get(player_craft=attacker)
+            sortie = Sortie.objects.filter(player_craft=attacker).last()
             if 'sortie_status' not in kwargs:
                 kwargs['sortie_status'] = 'damaged'
             elif kwargs['sortie_status'] == 'kill':
@@ -398,7 +398,7 @@ def event_damage(**kwargs):
                 add_event = True
 
         if add_event:
-            sortie = Sortie.objects.get(player_craft=target, mission=mission)
+            sortie = Sortie.objects.filter(player_craft=target, mission=mission).last()
             if 'sortie_status' not in kwargs:
                 if 'damage' in kwargs:
                     kwargs['sortie_status'] = 'was damaged'
@@ -584,11 +584,12 @@ def sortie_upd(**kwargs):
 
     if Sortie.objects.filter(mission=mission, player_craft=player_craft).exists():
         #logger.debug(f"Sortie [{mission_obj}] - exists in the DB")
-        sortie = Sortie.objects.get(mission=mission, player_craft=player_craft)
+        sortie = Sortie.objects.filter(mission=mission, player_craft=player_craft).last()
     else:
         # Add Sortie
         # if 'player' in kwargs:
-        sortie = Sortie.objects.create(mission=mission, player_craft=player_craft, player=kwargs['player'])
+        sortie = Sortie.objects.create(mission=mission, player_craft=player_craft, player=kwargs['player'],
+                                       tik=kwargs['tik'])
         sortie_upd = True
 
     if kwargs['sortie_status'] == 'init':
@@ -601,7 +602,13 @@ def sortie_upd(**kwargs):
         sortie.date_end = date_end
         sortie_upd = True
     elif kwargs['sortie_status'] == 'takeoff':
-        sortie.date_takeoff = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
+        date_takeoff = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
+        # Record new sortie (if player landed more than 5 mins)
+        if sortie.date_takeoff is not None:
+            player = sortie.player
+            sortie = Sortie(mission=mission, player_craft=player_craft, player=player, date_start=date_takeoff,
+                            tik=kwargs['tik'])
+        sortie.date_takeoff = date_takeoff
         sortie.is_in_flight = True
         sortie_upd = True
     elif kwargs['sortie_status'] == 'landing':
@@ -722,7 +729,7 @@ def event_bot_deinitialization(**kwargs):
 
     player_upd(**kwargs)    # update player stats
 
-    sortie = Sortie.objects.get(mission=mission, player_craft=player_craft)
+    sortie = Sortie.objects.filter(mission=mission, player_craft=player_craft).last()
     kwargs['sortie'] = sortie
     kwargs['sortie_status'] = 'bot_deinit'
     add_mission_event(**kwargs)
@@ -750,7 +757,7 @@ def event_bot_eject_leave(**kwargs):
     # check if player representing bot object ejected | skip otherwise
     if Player_Craft.objects.filter(bot_id=kwargs['bot_id'], mission=mission).exists():
         pilots_plane = Player_Craft.objects.filter(bot_id=kwargs['bot_id'], mission=mission).last()
-        sortie = Sortie.objects.get(player_craft=pilots_plane)
+        sortie = Sortie.objects.filter(player_craft=pilots_plane).last()
         sortie.is_bailed = True
         sortie.save()
 
