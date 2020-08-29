@@ -482,6 +482,7 @@ class Sortie(models.Model):
     date_land = models.DateTimeField(blank=True, null=True)
 
     flight_time = models.IntegerField(default=0)
+    duration = models.IntegerField(default=0)
 
     is_alive = models.BooleanField(default=True)
     is_bailed = models.BooleanField(default=False)

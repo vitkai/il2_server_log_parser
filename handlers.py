@@ -551,6 +551,7 @@ def event_airfield(**kwargs):
 
 
 def player_upd(**kwargs):
+    sortie_count = False
     if kwargs['atype_id'] == 10:    # plane init
         if Player.objects.filter(profile_id=kwargs['profile_id'], account_id=kwargs['account_id']).exists():
             logger.info(f"Player [{kwargs['profile_id']}] - exists in the DB")
@@ -564,19 +565,23 @@ def player_upd(**kwargs):
             player.save()
 
         return player
+    # data: {'tik': 25490, 'bot_id': 11268, 'pos': {'x': 119496.0469, 'y': 55.8246, 'z': 156457.3438}, 'atype_id': 16}
     elif kwargs['atype_id'] == 16:  # bot deinit
-        """
-        player_id = Player_Craft.objects.get(bot_id=kwargs['bot_id'])
-        player = Player.objects.get(pk=player_id)
-
-        player.sorties_total = player.sorties_total + 1
-        player.save
-        """
         pass
+    elif kwargs['atype_id'] == 4:  # PlayerMissionEnd
+        player_craft = kwargs['player_craft']
+        sortie = kwargs['sortie']
+        # update player stats for gunner
+        if not player_craft.is_pilot:
+            # check if flight duration > than 15 mins
+            # TODO separate a variable in config -> 15 * 60
+            if sortie.duration > 15 * 60 or sortie.kills > 0:
+                sortie_count = True
     elif kwargs['atype_id'] == 5:  # takeoff
-        # player = Player.objects.get(pk=kwargs['player_craft'].player)
+        sortie_count = True
+
+    if sortie_count:
         player = kwargs['player_craft'].player
-        # print(f"Player info: {player.account_id} | {player.sorties_total}")
         player.sorties_total = player.sorties_total + 1
         player.save()
 
@@ -600,9 +605,12 @@ def sortie_upd(**kwargs):
         sortie = Sortie.objects.filter(mission=mission, player_craft=player_craft).last()
     else:
         # Add Sortie
-        # if 'player' in kwargs:
+        role = 'Gunner'
+        if player_craft.is_pilot:
+            role = 'Pilot'
+
         sortie = Sortie.objects.create(mission=mission, player_craft=player_craft, player=kwargs['player'],
-                                       tik=kwargs['tik'])
+                                       tik=kwargs['tik'], player_role=role)
         sortie_upd = True
 
     if kwargs['sortie_status'] == 'init':
@@ -613,14 +621,22 @@ def sortie_upd(**kwargs):
     elif kwargs['sortie_status'] == 'end':
         date_end = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
         sortie.date_end = date_end
+        duration = (sortie.date_end - sortie.date_start).total_seconds()
+        sortie.duration = duration
         sortie_upd = True
+        kwargs['sortie'] = sortie
+        player_upd(**kwargs)
     elif kwargs['sortie_status'] == 'takeoff':
         date_takeoff = mission.date_start + timedelta(seconds=kwargs['tik'] // 50)
         # Record new sortie (if player landed more than 5 mins)
         if sortie.date_takeoff is not None:
             player = sortie.player
+            role = 'Gunner'
+            if player_craft.is_pilot:
+                role = 'Pilot'
+
             sortie = Sortie(mission=mission, player_craft=player_craft, player=player, date_start=date_takeoff,
-                            tik=kwargs['tik'])
+                            tik=kwargs['tik'], player_role=role)
         sortie.date_takeoff = date_takeoff
         sortie.is_in_flight = True
         sortie_upd = True
@@ -667,6 +683,7 @@ def event_player_plane(**kwargs):
     payload_id = kwargs["payload_id"]
     fuel = kwargs["fuel"]
     skin = kwargs["skin"]
+    airfield = kwargs['airfield_id']
 
     if Player_Craft.objects.filter(player=player, mission_object_plane=mission_obj, bot_id=bot_id).exists():
         logger.debug(f"Player_Craft [{mission_obj}] - exists in the DB")
@@ -676,7 +693,7 @@ def event_player_plane(**kwargs):
         player_craft = Player_Craft.objects.create(mission=mission, player=player, mission_object_plane=mission_obj,
                                                    bot_id=bot_id, cartridges=cartridges, shells=shells, bombs=bombs,
                                                    rockets=rockets, form=form, airstart=airstart, is_pilot=is_pilot,
-                                                   payload_id=payload_id, fuel=fuel, skin=skin,
+                                                   payload_id=payload_id, fuel=fuel, skin=skin, airfield=airfield,
                                                    pos_x=pos_x, pos_y=pos_y, pos_z=pos_z)
         player_craft.save()
 
