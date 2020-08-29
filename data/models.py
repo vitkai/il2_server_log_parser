@@ -590,3 +590,22 @@ class Mission_Objective(models.Model):
     pos_z = models.FloatField(blank=True, null=True)
 
     success = models.BooleanField(default=False)
+
+
+class Kill(models.Model):
+    tik = models.IntegerField(blank=True, null=True)
+
+    player = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='attacker_player')
+    mission = models.ForeignKey(Mission, on_delete=models.CASCADE)
+    sortie = models.ForeignKey(Sortie, on_delete=models.CASCADE)
+
+    pos_x = models.FloatField(blank=True, null=True)
+    pos_y = models.FloatField(blank=True, null=True)
+    pos_z = models.FloatField(blank=True, null=True)
+
+    target_object_name = models.CharField(max_length=128, blank=True, null=True)
+    target_is_player = models.BooleanField(default=False)
+    target_is_friend = models.BooleanField(default=False)
+    target_is_kill = models.BooleanField(default=False)
+    target_damage = models.IntegerField(blank=True, null=True)
+    target_player = models.ForeignKey(Player, on_delete=models.CASCADE, blank=True, null=True, related_name='target_player')

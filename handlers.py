@@ -20,7 +20,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
-from data.models import Airfield, Airfield_Mission, Mission, Mission_Event, Mission_Object, Mission_Objective, Player, \
+from data.models import Airfield, Airfield_Mission, Kill, Mission, Mission_Event, Mission_Object, Mission_Objective, Player, \
     Player_Craft, Sortie
 
 logger = logging.getLogger(__name__)
@@ -346,10 +346,54 @@ def event_hit(**kwargs):
     event_damage(**kwargs)
 
 
+def kills_upd(**kwargs):
+    global mission
+    target_is_player = False
+    target_obj: Mission_Object
+    target_obj = kwargs['target']
+
+    # check if player is a target
+    if Player_Craft.objects.filter(mission_object_plane=target_obj).exists():
+        target_is_player = True
+    elif target_obj is not None:
+        parent_target_obj = kwargs['target']
+        # get the top parent object
+        while parent_target_obj.parent_id is not None:
+            parent_target_obj = Mission_Object.objects.get(object_id=parent_target_obj.parent_id)
+        if Player_Craft.objects.filter(mission_object_plane=parent_target_obj).exists():
+            target_is_player = True
+
+    kills = {}
+    if 'pos' in kwargs:
+        pos = kwargs.pop('pos')
+        kills['pos_x'], kills['pos_y'], kills['pos_z'] = pos_to_tup(pos)
+
+    kills['tik'] = kwargs['tik']
+    player = kwargs['player_craft']   # get player craft
+    player = player.player      # get player from craft
+    kills['player'] = player
+    kills['mission'] = mission
+    kills['sortie'] = kwargs['sortie']
+    if target_obj is not None:
+        kills['target_object_name'] = target_obj.object_name
+    kills['target_is_player'] = target_is_player
+    if kwargs['atype_id'] == 3:
+        kills['target_is_kill'] = True  # False by default
+    if kwargs['sortie_status'] == 'damaged':
+        kills['target_damage'] = kwargs['damage']
+
+    # create new Kills record
+    kill = Kill(**kills)
+    kill.save()
+    # TODO check Kills record existence and summarise damage if necessary
+
+
 def event_damage(**kwargs):
     # data: {'tik': 24925, 'damage': 0.3, 'attacker_id': None, 'target_id': 10244,
     #               'pos': {'x': 119480.9688, 'y': 56.9919, 'z': 156564.7344}, 'atype_id': 2}
-    # logger.debug('Event handler for [event_damage] is empty')
+
+    # data: {'tik': 37104, 'attacker_id': 8195, 'target_id': 64515,
+    #       'pos': {'x': 105927.6953, 'y': 52.026, 'z': 182844.0625}, 'atype_id': 3}
 
     global mission
 
@@ -388,6 +432,10 @@ def event_damage(**kwargs):
             kwargs['player_craft'] = attacker
 
             add_mission_event(**kwargs)
+
+            kwargs['target'] = target
+            kwargs['friendly_fire'] = friendly_fire
+            kills_upd(**kwargs)
 
     # looking for target's player craft
     parent_object = False
