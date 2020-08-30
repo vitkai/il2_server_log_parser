@@ -422,6 +422,7 @@ def event_damage(**kwargs):
             elif kwargs['sortie_status'] == 'hit':
                 if friendly_fire:
                     sortie.hits_friend = sortie.hits_friend + 1
+                    logger.debug(f"hits_friend: {kwargs}")
                 else:
                     sortie.hits = sortie.hits + 1
 
