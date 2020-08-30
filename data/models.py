@@ -598,6 +598,7 @@ class Kill(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='attacker_player')
     mission = models.ForeignKey(Mission, on_delete=models.CASCADE)
     sortie = models.ForeignKey(Sortie, on_delete=models.CASCADE)
+    target = models.ForeignKey(Mission_Object, on_delete=models.CASCADE)
 
     pos_x = models.FloatField(blank=True, null=True)
     pos_y = models.FloatField(blank=True, null=True)
@@ -607,5 +608,6 @@ class Kill(models.Model):
     target_is_player = models.BooleanField(default=False)
     target_is_friend = models.BooleanField(default=False)
     target_is_kill = models.BooleanField(default=False)
-    target_damage = models.FloatField(blank=True, null=True)
+    target_damage = models.FloatField(default=0.0)
     target_player = models.ForeignKey(Player, on_delete=models.CASCADE, blank=True, null=True, related_name='target_player')
+    target_kill_share = models.FloatField(blank=True, null=True)    # share in % for this kill

@@ -377,15 +377,46 @@ def kills_upd(**kwargs):
     if target_obj is not None:
         kills['target_object_name'] = target_obj.object_name
     kills['target_is_player'] = target_is_player
+    kills['target'] = target_obj
     if kwargs['atype_id'] == 3:
         kills['target_is_kill'] = True  # False by default
+    """if kwargs['sortie_status'] == 'damaged':
+        kills['target_damage'] = kwargs['damage']
+    """
+    new_kill_rec = True
     if kwargs['sortie_status'] == 'damaged':
         kills['target_damage'] = kwargs['damage']
-
-    # create new Kills record
-    kill = Kill(**kills)
-    kill.save()
-    # TODO check Kills record existence and summarise damage if necessary
+        # check if Kill record exists
+        if Kill.objects.filter(sortie=kills['sortie'], mission=mission, target=kills['target']).exists():
+            kill = Kill.objects.filter(sortie=kills['sortie'], mission=mission, target=kills['target']).last()
+            kill.target_damage = round(kill.target_damage + kills['target_damage'], 1)
+            kill.save()
+            new_kill_rec = False
+        # if damage record doesn't exists, create a new one
+        elif kills['target'] is not None:
+            kill = Kill(**kills)
+            kill.save()
+    # if damage record not found or status is not 'damaged' than create new records for all kill damagers
+    else:
+        # TODO detect where is the root of issue with kills getting to db and search through damagers
+        damage_list = Kill.objects.filter(mission=mission, target=kills['target'], target_is_kill=False)
+        #logger.debug(f"damage_list count: {damage_list.count()}")
+        if damage_list.count() > 0:
+            for damage_item in damage_list:
+                #logger.debug(f"damage_item.target_damage: {damage_item.target_damage}")
+                kills['target_kill_share'] = damage_item.target_damage
+                kills['sortie'] = damage_item.sortie
+                kills['player'] = damage_item.player
+                # create new Kill record
+                kill = Kill(**kills)
+                kill.save()
+                """# reset previously recorded damage to target after kill was recorded
+                damage_item.target_damage = 0.0
+                damage_item.save"""
+                # TODO update other player/sortie stats with individual/shared kills info
+        else:
+            # TODO find out how to process kills that have no damage records
+            pass
 
 
 def event_damage(**kwargs):
@@ -436,7 +467,8 @@ def event_damage(**kwargs):
 
             kwargs['target'] = target
             kwargs['friendly_fire'] = friendly_fire
-            kills_upd(**kwargs)
+            if kwargs['atype_id'] != 1:     # update kills info if event is not 'hit'
+                kills_upd(**kwargs)
 
     # looking for target's player craft
     parent_object = False
