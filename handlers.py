@@ -389,7 +389,8 @@ def kills_upd(**kwargs):
     if kwargs['atype_id'] == 2:
         kills['target_damage'] = kwargs['damage']
         # check if Kill record exists
-        if Kill.objects.filter(sortie=kills['sortie'], mission=mission, target=kills['target']).exists():
+        if Kill.objects.filter(sortie=kills['sortie'], mission=mission, target=kills['target'], target_is_kill=False,
+                               target_was_killed=False).exists():
             kill = Kill.objects.filter(sortie=kills['sortie'], mission=mission, target=kills['target']).last()
             kill.target_damage = round(kill.target_damage + kills['target_damage'], 1)
             kill.save()
@@ -407,33 +408,33 @@ def kills_upd(**kwargs):
                                           target_was_killed=False)
         #logger.debug(f"damage_list count: {damage_list.count()}")
         if damage_list.count() > 0:
-            for damage_item in damage_list:
-                #logger.debug(f"damage_item.target_damage: {damage_item.target_damage}")
-                kills['target_kill_share'] = damage_item.target_damage
-                kills['sortie'] = damage_item.sortie
-                kills['player'] = damage_item.player
+            for damaged_item in damage_list:
+                #logger.debug(f"damaged_item.target_damage: {damaged_item.target_damage}")
+                kills['target_kill_share'] = damaged_item.target_damage
+                kills['sortie'] = damaged_item.sortie
+                kills['player'] = damaged_item.player
                 # kills['target_damage'] = 0
                 # create new Kill record
                 kill = Kill.objects.create(**kills)
                 kill.save()
                 # mark target as killed
-                damage_item.target_was_killed = True
-                damage_item.save()
+                damaged_item.target_was_killed = True
+                damaged_item.save()
                 """# reset previously recorded damage to target after kill was recorded
-                damage_item.target_damage = 0.0
-                damage_item.save"""
+                damaged_item.target_damage = 0.0
+                damaged_item.save"""
                 # TODO update other player/sortie stats with individual/shared kills info
         else:
             # TODO find out how to process kills that have no damage records
             pass
 
 
-    print(f"kills:{kills}")
+    """print(f"kills:{kills}")
     logger.debug(f"kills:{kills}")
     # if kills['tik'] == 377587 or kills['tik'] == 377666:
 
     if kills['tik'] == 39460:
-        sys.exit()
+        sys.exit()"""
 
 
 def event_damage(**kwargs):
