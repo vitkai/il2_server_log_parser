@@ -8,6 +8,7 @@ import logging
 import os
 import pytz
 import re
+import sys
 import time
 
 from django.conf import settings
@@ -364,9 +365,9 @@ def kills_upd(**kwargs):
             target_is_player = True
 
     kills = {}
-    if 'pos' in kwargs:
+    """if 'pos' in kwargs:
         pos = kwargs.pop('pos')
-        kills['pos_x'], kills['pos_y'], kills['pos_z'] = pos_to_tup(pos)
+        kills['pos_x'], kills['pos_y'], kills['pos_z'] = pos_to_tup(pos)"""
 
     kills['tik'] = kwargs['tik']
     player = kwargs['player_craft']   # get player craft
@@ -378,13 +379,14 @@ def kills_upd(**kwargs):
         kills['target_object_name'] = target_obj.object_name
     kills['target_is_player'] = target_is_player
     kills['target'] = target_obj
-    if kwargs['atype_id'] == 3:
+    """if kwargs['atype_id'] == 3:
         kills['target_is_kill'] = True  # False by default
-    """if kwargs['sortie_status'] == 'damaged':
+    if kwargs['sortie_status'] == 'damaged':
         kills['target_damage'] = kwargs['damage']
     """
     new_kill_rec = True
-    if kwargs['sortie_status'] == 'damaged':
+    # if kwargs['sortie_status'] == 'damaged':
+    if kwargs['atype_id'] == 2:
         kills['target_damage'] = kwargs['damage']
         # check if Kill record exists
         if Kill.objects.filter(sortie=kills['sortie'], mission=mission, target=kills['target']).exists():
@@ -394,12 +396,15 @@ def kills_upd(**kwargs):
             new_kill_rec = False
         # if damage record doesn't exists, create a new one
         elif kills['target'] is not None:
-            kill = Kill(**kills)
+            kill = Kill.objects.create(**kills)
             kill.save()
     # if damage record not found or status is not 'damaged' than create new records for all kill damagers
-    else:
+    elif kwargs['atype_id'] == 3:
+        kills['target_damage'] = 0
+        kills['target_is_kill'] = True  # False by default
         # TODO detect where is the root of issue with kills getting to db and search through damagers
-        damage_list = Kill.objects.filter(mission=mission, target=kills['target'], target_is_kill=False)
+        damage_list = Kill.objects.filter(mission=mission, target=kills['target'], target_is_kill=False,
+                                          target_was_killed=False)
         #logger.debug(f"damage_list count: {damage_list.count()}")
         if damage_list.count() > 0:
             for damage_item in damage_list:
@@ -407,9 +412,13 @@ def kills_upd(**kwargs):
                 kills['target_kill_share'] = damage_item.target_damage
                 kills['sortie'] = damage_item.sortie
                 kills['player'] = damage_item.player
+                # kills['target_damage'] = 0
                 # create new Kill record
-                kill = Kill(**kills)
+                kill = Kill.objects.create(**kills)
                 kill.save()
+                # mark target as killed
+                damage_item.target_was_killed = True
+                damage_item.save()
                 """# reset previously recorded damage to target after kill was recorded
                 damage_item.target_damage = 0.0
                 damage_item.save"""
@@ -417,6 +426,14 @@ def kills_upd(**kwargs):
         else:
             # TODO find out how to process kills that have no damage records
             pass
+
+
+    print(f"kills:{kills}")
+    logger.debug(f"kills:{kills}")
+    # if kills['tik'] == 377587 or kills['tik'] == 377666:
+
+    if kills['tik'] == 39460:
+        sys.exit()
 
 
 def event_damage(**kwargs):
