@@ -359,9 +359,11 @@ def kills_upd(**kwargs):
     target_obj: Mission_Object
     target_obj = kwargs['target']
 
-    # check if player is a target
+    # check if target is a player
     if Player_Craft.objects.filter(mission_object_plane=target_obj).exists():
         target_is_player = True
+        target_player = Player_Craft.objects.filter(mission_object_plane=target_obj).last()
+        target_player = target_player.player
     elif target_obj is not None:
         parent_target_obj = kwargs['target']
         # get the top parent object
@@ -369,6 +371,8 @@ def kills_upd(**kwargs):
             parent_target_obj = Mission_Object.objects.filter(object_id=parent_target_obj.parent_id).last()
         if Player_Craft.objects.filter(mission_object_plane=parent_target_obj).exists():
             target_is_player = True
+            target_player = Player_Craft.objects.filter(mission_object_plane=parent_target_obj).last()
+            target_player = target_player.player
 
     kills = {}
     """if 'pos' in kwargs:
@@ -384,13 +388,10 @@ def kills_upd(**kwargs):
     if target_obj is not None:
         kills['target_object_name'] = target_obj.object_name
     kills['target_is_player'] = target_is_player
+    if target_is_player:
+        kills['target_player'] = target_player
     kills['target'] = target_obj
-    """if kwargs['atype_id'] == 3:
-        kills['target_is_kill'] = True  # False by default
-    if kwargs['sortie_status'] == 'damaged':
-        kills['target_damage'] = kwargs['damage']
-    """
-    new_kill_rec = True
+    # new_kill_rec = True
     # if kwargs['sortie_status'] == 'damaged':
     if kwargs['atype_id'] == 2:
         kills['target_damage'] = kwargs['damage']
@@ -400,7 +401,7 @@ def kills_upd(**kwargs):
             kill = Kill.objects.filter(sortie=kills['sortie'], mission=mission, target=kills['target']).last()
             kill.target_damage = round(kill.target_damage + kills['target_damage'], 1)
             kill.save()
-            new_kill_rec = False
+            # new_kill_rec = False
         # if damage record doesn't exists, create a new one
         elif kills['target'] is not None:
             kill = Kill.objects.create(**kills)
