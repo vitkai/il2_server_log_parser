@@ -321,6 +321,12 @@ def pos_to_tup(pos):
 
 
 def add_mission_event(**kwargs):
+    global mission
+
+    # remove target field form kwargs if any
+    if 'target' in kwargs:
+        kwargs.pop('target')
+
     if 'pos' in kwargs:
         pos = kwargs.pop('pos')
         kwargs['pos_x'], kwargs['pos_y'], kwargs['pos_z'] = pos_to_tup(pos)
@@ -360,7 +366,7 @@ def kills_upd(**kwargs):
         parent_target_obj = kwargs['target']
         # get the top parent object
         while parent_target_obj.parent_id is not None:
-            parent_target_obj = Mission_Object.objects.get(object_id=parent_target_obj.parent_id)
+            parent_target_obj = Mission_Object.objects.filter(object_id=parent_target_obj.parent_id).last()
         if Player_Craft.objects.filter(mission_object_plane=parent_target_obj).exists():
             target_is_player = True
 

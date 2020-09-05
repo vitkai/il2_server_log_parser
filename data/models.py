@@ -522,6 +522,7 @@ class Mission_Event(models.Model):
     tik = models.IntegerField(blank=True, null=True, db_index=True)
     player = models.ForeignKey(Player, blank=True, null=True, on_delete=models.CASCADE)
     player_craft = models.ForeignKey(Player_Craft, blank=True, null=True, on_delete=models.CASCADE)
+    # target = models.ForeignKey(Mission_Object, blank=True, null=True, on_delete=models.CASCADE)
 
     account_id = models.CharField(max_length=40, null=True, db_index=True)
     profile_id = models.CharField(max_length=40, null=True, db_index=True)
@@ -564,6 +565,7 @@ class Mission_Event(models.Model):
     weapon_mods_id = models.IntegerField(blank=True, null=True)
     enabled = models.BooleanField(default=False)
     in_air = models.IntegerField(blank=True, null=True)
+    friendly_fire = models.BooleanField(default=False)
     # boundary = models.IntegerField(blank=True, null=True)
 
 
