@@ -22,7 +22,7 @@ from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
 from data.models import Airfield, Airfield_Mission, Kill, Mission, Mission_Event, Mission_Object, Mission_Objective, Player, \
-    Player_Craft, Sortie
+    Player_Craft, Sortie, VLife
 
 logger = logging.getLogger(__name__)
 global mission, tik_last
@@ -542,6 +542,10 @@ def event_damage(**kwargs):
                     sortie.is_alive = False
                     sortie.save()
 
+                    # create new VLife
+                    vlife = VLife.objects.create(player=sortie.player)
+                    vlife.save()
+
             kwargs['player_craft'] = target
             kwargs['sortie'] = sortie
 
@@ -670,6 +674,10 @@ def player_upd(**kwargs):
             player = Player(profile_id=kwargs['profile_id'], account_id=kwargs['account_id'], name=name)
             player.save()
 
+            # create Vlife record
+            vlife = VLife.objects.create(player=player)
+            vlife.save()
+
         return player
     # data: {'tik': 25490, 'bot_id': 11268, 'pos': {'x': 119496.0469, 'y': 55.8246, 'z': 156457.3438}, 'atype_id': 16}
     elif kwargs['atype_id'] == 16:  # bot deinit
@@ -715,8 +723,10 @@ def sortie_upd(**kwargs):
         if player_craft.is_pilot:
             role = 'Pilot'
 
+        vlife = VLife.objects.filter(player=kwargs['player']).last()
+
         sortie = Sortie.objects.create(mission=mission, player_craft=player_craft, player=kwargs['player'],
-                                       tik=kwargs['tik'], player_role=role)
+                                       tik=kwargs['tik'], player_role=role, vlife=vlife)
         sortie_upd = True
 
     if kwargs['sortie_status'] == 'init':

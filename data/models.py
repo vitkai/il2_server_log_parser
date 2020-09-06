@@ -461,6 +461,17 @@ class Player_Craft(models.Model):
     skin = models.CharField(max_length=128)
 
 
+class VLife(models.Model):
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    score = models.IntegerField(default=False)
+
+    class Meta:
+        db_table = 'vlife'
+        # ordering = ['key']
+        verbose_name = _('virtual life')
+        verbose_name_plural = _('virtual lives')
+
+
 class Sortie(models.Model):
     # nickname = models.CharField(max_length=128)
     tik = models.IntegerField(blank=True, null=True)
@@ -499,20 +510,11 @@ class Sortie(models.Model):
     hits_friend = models.IntegerField(default=0)
     kills_friend = models.IntegerField(default=0)
 
+    # sortie_score = models.IntegerField(default=0)
     # mission = models.ForeignKey(Mission, on_delete=models.CASCADE)
     # profile = models.ForeignKey(Profile, related_name='+', on_delete=models.CASCADE)
     # tour = models.ForeignKey(Tour, related_name='sorties', on_delete=models.CASCADE)
-    # vlife = models.ForeignKey(VLife, related_name='sorties_list', on_delete=models.CASCADE, blank=True, null=True)
-    """
-    # parent = models.ForeignKey('self', related_name='children', blank=True, null=True, on_delete=models.PROTECT)
-
-    aircraft = models.ForeignKey(Object, related_name='+', on_delete=models.PROTECT)
-
-    fuel = models.IntegerField(default=100)  # в процентах!
-    skin = models.CharField(max_length=256, blank=True)
-    payload_id = models.IntegerField(default=0)
-    weapon_mods_id = ArrayField(models.IntegerField(), default=list)
-    """
+    vlife = models.ForeignKey(VLife, related_name='sorties_list', on_delete=models.CASCADE, blank=True, null=True)
 
 
 # Mission Events class
