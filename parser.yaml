@@ -7,7 +7,7 @@ settings:
   # log_ptrn: 'missionReport(*)[*].txt'
   log_ptrn: 'missionReport*[[]*[]].txt'
   objects_n_score_path: 'src\'
-  load_objects_n_score: True
+  load_objects_n_score: False
 
 Atype:
   MissionStart: 0

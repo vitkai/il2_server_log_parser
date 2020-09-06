@@ -172,8 +172,8 @@ def main():
         objects_n_score_path = os.path.join(full_path, conf['settings']['objects_n_score_path'])
         load_objects_n_score(objects_n_score_path)
 
-    sys.exit()
-    #tst_user()
+    # sys.exit()
+    # tst_user()
 
     log_dir_path = os.path.join(full_path, conf['settings']['log_path'])
 
