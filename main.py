@@ -5,6 +5,7 @@ Created: Fri Jul 24 2020 11:05 MSK
 """
 #import glob
 import codecs
+import csv
 import os
 from pathlib import Path
 import re
@@ -125,6 +126,34 @@ def get_files_lst(log_path, log_ptrn):
     return lst
 
 
+def load_objects_n_score(base_dir):
+    # base_dir = settings.BASE_DIR
+    score = os.path.join(base_dir, 'score.csv')
+    score_dict = {}
+    # with score.open(encoding='utf-8') as file_csv:
+    with codecs.open(score, mode='rb', encoding='utf-8') as file_csv:
+        for row in csv.DictReader(file_csv):
+            s = Score.objects.update_or_create(key=row['key'].lower(),
+                                               defaults={'type': row['type'], 'value': row['value']})[0]
+            score_dict[s.key] = s.id
+
+    objects = os.path.join(base_dir, 'objects.csv')
+    #with objects.open(encoding='utf-8') as file_csv:
+    with codecs.open(objects, mode='rb', encoding='utf-8') as file_csv:
+        for row in csv.DictReader(file_csv):
+            name_en = row['name'] or row['log_name']
+            is_playable = bool(int(row['playable']))
+            Object.objects.update_or_create(log_name=row['log_name'].lower(),
+                                            defaults={'name': name_en, 'name_en': name_en, 'name_ru': row['name_ru'],
+                                                      'score_id': score_dict[row['cls']], 'is_playable': is_playable,
+                                                      'cls': row['cls']})
+    classes = os.path.join(base_dir, 'classes.csv')
+    # with classes.open(encoding='utf-8') as file_csv:
+    with codecs.open(classes, mode='rb', encoding='utf-8') as file_csv:
+        for row in csv.DictReader(file_csv):
+            Object.objects.filter(cls=row['cls']).update(cls_base=row['cls_base'])
+
+
 # main starts here
 def main():
     rec: Mission_Log
@@ -139,10 +168,16 @@ def main():
     msg = f'Loaded the following configuration:\n{conf}'
     logger.debug(msg)
 
-    log_dir_path = os.path.join(full_path, conf['settings']['log_path'])
+    if conf['settings']['load_objects_n_score']:
+        objects_n_score_path = os.path.join(full_path, conf['settings']['objects_n_score_path'])
+        load_objects_n_score(objects_n_score_path)
 
+    sys.exit()
     #tst_user()
 
+    log_dir_path = os.path.join(full_path, conf['settings']['log_path'])
+
+    # process log files
     files = get_files_lst(log_dir_path, conf['settings']['log_ptrn'])
 
     """msg = f'files to process list:\n{files}'

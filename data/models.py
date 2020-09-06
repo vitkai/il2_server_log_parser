@@ -117,6 +117,8 @@ class Object(models.Model):
     )
 
     name = models.CharField(max_length=64, blank=True)
+    name_en = models.CharField(max_length=64, blank=True)
+    name_ru = models.CharField(max_length=64, blank=True)
     log_name = models.CharField(max_length=64, editable=False, unique=True)
     cls_base = models.CharField(choices=CLASSES_BASE, max_length=24, blank=True)
     cls = models.CharField(choices=CLASSES, max_length=24, blank=True)
