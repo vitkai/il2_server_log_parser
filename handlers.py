@@ -751,8 +751,9 @@ def sortie_upd(**kwargs):
             if player_craft.is_pilot:
                 role = 'Pilot'
 
+            vlife = VLife.objects.filter(player=player).last()
             sortie = Sortie.objects.create(mission=mission, player_craft=player_craft, player=player,
-                                           date_start=date_takeoff, tik=kwargs['tik'], player_role=role)
+                                       date_start=date_takeoff, tik=kwargs['tik'], player_role=role, vlife=vlife)
         sortie.date_takeoff = date_takeoff
         sortie.is_in_flight = True
         sortie_upd = True
